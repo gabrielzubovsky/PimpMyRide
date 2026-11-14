@@ -1,0 +1,8 @@
+node_modules
+dist
+*.local
+.DS_Store
+*:Zone.Identifier
+
+# Raw source models, downloaded by scripts/prepare-car.mjs
+assets-src

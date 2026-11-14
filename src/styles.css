@@ -1,0 +1,558 @@
+/* Pimp My Ride
+ *
+ * The page is a dark workshop with one sheet of paper in it: the build sheet.
+ * One typeface, Archivo, does everything by changing width. Names are set
+ * wide, like lettering on a tyre sidewall. Specs are set narrow, like the
+ * sizes stamped into the back of a wheel.
+ */
+
+:root {
+  --sheet: #e6e9e4;
+  --sheet-shade: #d6dad4;
+  --ink: #151a1c;
+  --ink-soft: #4b5456;
+  --rule: #b3b9b2;
+  --tape: #1d5fd6; /* fine-line masking tape blue */
+  --shop: #1a1c1e;
+  --shop-text: #e9ebe6;
+
+  --font: 'Archivo Variable', 'Archivo', system-ui, sans-serif;
+  --sheet-width: 380px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--shop);
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: 15px;
+  line-height: 1.4;
+  -webkit-font-smoothing: antialiased;
+}
+
+button,
+input {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+:focus-visible {
+  outline: 2px solid var(--tape);
+  outline-offset: 2px;
+}
+
+h1,
+h2,
+p {
+  margin: 0;
+}
+
+/* Narrow, even-width figures for anything that is a measurement. */
+.spec {
+  font-stretch: 80%;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
+}
+
+/* ---------- Layout ---------- */
+
+.app {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--sheet-width);
+  height: 100dvh;
+}
+
+.stage {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.stage canvas {
+  display: block;
+  touch-action: none;
+}
+
+/* ---------- Over the 3D view ---------- */
+
+.masthead {
+  position: absolute;
+  top: 22px;
+  left: 26px;
+  color: var(--shop-text);
+  /* Keeps the lettering readable when a pale part of the car is behind it. */
+  text-shadow: 0 1px 3px rgb(0 0 0 / 0.55);
+  pointer-events: none;
+}
+
+.wordmark {
+  font-size: 26px;
+  font-stretch: 125%;
+  font-weight: 800;
+  letter-spacing: -0.015em;
+  line-height: 1;
+}
+
+.masthead-car {
+  margin-top: 8px;
+  font-size: 15px;
+  font-weight: 500;
+  opacity: 0.8;
+}
+
+.hint,
+.loading {
+  position: absolute;
+  left: 26px;
+  bottom: 26px;
+  max-width: 22ch;
+  color: var(--shop-text);
+  font-size: 13px;
+  text-shadow: 0 1px 3px rgb(0 0 0 / 0.8);
+  opacity: 0.78;
+  pointer-events: none;
+}
+
+.loading {
+  inset: 50% auto auto 50%;
+  max-width: none;
+  transform: translate(-50%, -50%);
+  font-size: 16px;
+  font-weight: 600;
+  opacity: 0.9;
+}
+
+.views {
+  position: absolute;
+  left: 50%;
+  bottom: 20px;
+  display: flex;
+  gap: 2px;
+  padding: 4px;
+  transform: translateX(-50%);
+  background: rgb(18 20 22 / 0.78);
+  border: 1px solid rgb(255 255 255 / 0.12);
+  border-radius: 3px;
+  backdrop-filter: blur(8px);
+}
+
+.view {
+  padding: 9px 16px;
+  background: none;
+  border: 0;
+  border-radius: 2px;
+  color: var(--shop-text);
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.view:hover {
+  background: rgb(255 255 255 / 0.09);
+}
+
+.view[aria-pressed='true'] {
+  background: var(--sheet);
+  color: var(--ink);
+}
+
+/* ---------- Build sheet ---------- */
+
+.sheet {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--sheet);
+  box-shadow: -12px 0 32px rgb(0 0 0 / 0.35);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.sheet-head {
+  padding: 24px 24px 18px;
+  border-bottom: 2px solid var(--ink);
+}
+
+.sheet-head h1 {
+  font-size: 28px;
+  font-stretch: 112%;
+  font-weight: 750;
+  letter-spacing: -0.01em;
+  line-height: 1.05;
+}
+
+.sheet-head p {
+  margin-top: 6px;
+  color: var(--ink-soft);
+}
+
+.lines {
+  flex: 1;
+}
+
+.line {
+  border-bottom: 1px solid var(--rule);
+}
+
+.line-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  width: 100%;
+  padding: 14px 24px;
+  background: none;
+  border: 0;
+  border-left: 4px solid transparent;
+  text-align: left;
+}
+
+.line-head:hover {
+  background: var(--sheet-shade);
+}
+
+.line[data-open='true'] .line-head {
+  border-left-color: var(--tape);
+}
+
+.line-label {
+  font-size: 15px;
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+.line-value {
+  color: var(--ink-soft);
+  font-size: 14px;
+  text-align: right;
+}
+
+.line-body {
+  display: grid;
+  gap: 16px;
+  padding: 4px 24px 22px 28px;
+}
+
+.note {
+  color: var(--ink-soft);
+  font-size: 13px;
+  max-width: 44ch;
+}
+
+/* Paint chips: a block of colour with its name printed underneath. */
+.chips {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px 8px;
+}
+
+.chips-wide {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.chip {
+  display: grid;
+  gap: 6px;
+  align-content: start;
+  padding: 0;
+  background: none;
+  border: 0;
+  text-align: left;
+}
+
+.chip-colour {
+  aspect-ratio: 1 / 1.1;
+  border: 1px solid rgb(0 0 0 / 0.28);
+  border-radius: 2px;
+}
+
+.chips-wide .chip-colour {
+  aspect-ratio: 5 / 2;
+}
+
+.chip[aria-pressed='true'] .chip-colour {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+.chip-name {
+  font-size: 12px;
+  font-stretch: 86%;
+  font-weight: 500;
+  line-height: 1.2;
+  color: var(--ink-soft);
+}
+
+.chip[aria-pressed='true'] .chip-name {
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.field-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 14px;
+}
+
+.field-row input[type='color'] {
+  width: 44px;
+  height: 28px;
+  padding: 0;
+  background: none;
+  border: 1px solid var(--ink);
+  border-radius: 2px;
+  cursor: pointer;
+}
+
+.segmented {
+  display: flex;
+  border: 1px solid var(--ink);
+  border-radius: 2px;
+}
+
+.segmented button {
+  flex: 1;
+  min-width: 0;
+  padding: 7px 2px;
+  background: none;
+  border: 0;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.segmented button + button {
+  border-left: 1px solid var(--ink);
+}
+
+.segmented button:hover {
+  background: var(--sheet-shade);
+}
+
+.segmented button[aria-pressed='true'] {
+  background: var(--ink);
+  color: var(--sheet);
+}
+
+/* Option rows: wheels and sizes. */
+.options {
+  display: grid;
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+}
+
+.option {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  background: none;
+  border: 0;
+  text-align: left;
+}
+
+.option + .option {
+  border-top: 1px solid var(--rule);
+}
+
+.option:hover {
+  background: var(--sheet-shade);
+}
+
+.option[aria-pressed='true'] {
+  background: var(--ink);
+  color: var(--sheet);
+}
+
+.option-stack {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 3px;
+}
+
+.option-text {
+  display: grid;
+  gap: 1px;
+}
+
+.option-name {
+  font-size: 14px;
+  font-weight: 650;
+  line-height: 1.25;
+}
+
+.option-note {
+  font-size: 12.5px;
+  opacity: 0.72;
+}
+
+.option-price {
+  font-size: 13px;
+  font-stretch: 80%;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.glyph {
+  width: 30px;
+  height: 30px;
+}
+
+.sizes {
+  display: grid;
+  grid-template-columns: auto auto 1fr;
+  gap: 2px 14px;
+  margin-top: 6px;
+  font-size: 14px;
+}
+
+.slider {
+  display: grid;
+  gap: 6px;
+}
+
+.slider-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 14px;
+}
+
+.slider input[type='range'] {
+  width: 100%;
+  margin: 0;
+  accent-color: var(--tape);
+}
+
+.check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.check input {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: var(--tape);
+}
+
+.sheet-foot {
+  position: sticky;
+  bottom: 0;
+  display: grid;
+  gap: 10px;
+  padding: 16px 24px 18px;
+  background: var(--sheet);
+  border-top: 2px solid var(--ink);
+}
+
+.total {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  font-weight: 650;
+}
+
+.total .spec {
+  font-size: 22px;
+}
+
+.reset {
+  justify-self: start;
+  margin-top: 4px;
+  padding: 8px 14px;
+  background: none;
+  border: 1px solid var(--ink);
+  border-radius: 2px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.reset:hover {
+  background: var(--ink);
+  color: var(--sheet);
+}
+
+/* ---------- Small screens: car on top, sheet below ---------- */
+
+@media (max-width: 860px) {
+  .app {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 52fr) minmax(0, 48fr);
+  }
+
+  .sheet {
+    box-shadow: 0 -10px 28px rgb(0 0 0 / 0.35);
+  }
+
+  .masthead {
+    top: 14px;
+    left: 16px;
+  }
+
+  .wordmark {
+    font-size: 19px;
+  }
+
+  .masthead-car {
+    margin-top: 4px;
+    font-size: 13px;
+  }
+
+  .hint {
+    display: none;
+  }
+
+  .views {
+    bottom: 10px;
+    max-width: calc(100% - 20px);
+  }
+
+  .view {
+    padding: 8px 10px;
+    font-size: 13px;
+  }
+
+  .sheet-head {
+    padding: 16px 16px 12px;
+  }
+
+  .sheet-head h1 {
+    font-size: 22px;
+  }
+
+  .line-head {
+    padding: 12px 16px;
+  }
+
+  .line-body {
+    padding: 4px 16px 18px 20px;
+  }
+
+  .sheet-foot {
+    position: static;
+    padding: 14px 16px 18px;
+  }
+}
