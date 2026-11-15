@@ -145,7 +145,8 @@ low poly or NC-licensed.
 
 | Model | Chassis | Licence | Author | Faces | Pick | Link |
 | --- | --- | --- | --- | --- | --- | --- |
-| 1965 Ford Mustang Convertible | 1st gen | CC-BY | Kristian LaGrange | 111,817 | PICK | https://sketchfab.com/3d-models/none-05f2a294087541ab82f681136d134344 |
+| 1965 Ford Mustang Convertible | 1st gen | CC-BY | Kristian LaGrange | 111,817 | rejected: one texture for everything | https://sketchfab.com/3d-models/none-05f2a294087541ab82f681136d134344 |
+| 1965 Ford Mustang (coupe) | 1st gen | CC-BY | David_Holiday | 54,388 | PICK | https://sketchfab.com/3d-models/none-7e93cc22b96a4788897a513374ef4486 |
 | Ford Mustang Shelby 2012 | S197 | CC-BY | David_Holiday | 183,156 | alt | https://sketchfab.com/3d-models/none-b60b3a520c024fd69416d56a71900626 |
 | Ford GT 2016 (FREE) | 2nd gen GT | CC-BY | JUSTGAME | 129,826 | | https://sketchfab.com/3d-models/none-b832b7b228714df285884e8e5d711540 |
 | 2009 Ford Focus RS | Mk2 | CC-BY | 007 | 187,374 | | https://sketchfab.com/3d-models/none-737b0a0dab0d4d81a3cf37b4bd6b7880 |
@@ -171,8 +172,8 @@ Good coverage all round; left out of the first ten for marque variety only
 
 | Model | Chassis | Licence | Author | Faces | Pick | Link |
 | --- | --- | --- | --- | --- | --- | --- |
-| Lamborghini Countach 5000QV | 5000 QV | CC-BY | Randomness | 175,061 | PICK | https://sketchfab.com/3d-models/none-2f02b54e01fc428e8b19759c5970f882 |
-| 1988 Lamborghini Countach | 25th Anniv. | CC-BY | Dave Love SketchFab | 203,056 | alt | https://sketchfab.com/3d-models/none-6ecbd718252143b1a83875357d003592 |
+| Lamborghini Countach 5000QV | 5000 QV | CC-BY | Randomness | 175,061 | rejected: no colours or part names | https://sketchfab.com/3d-models/none-2f02b54e01fc428e8b19759c5970f882 |
+| 1988 Lamborghini Countach | 25th Anniv. | CC-BY | Dave Love SketchFab | 203,056 | PICK | https://sketchfab.com/3d-models/none-6ecbd718252143b1a83875357d003592 |
 | Lamborghini Aventador LP700 | LP700-4 | CC-BY | David_Holiday | 188,836 | | https://sketchfab.com/3d-models/none-67796ac0bfa54c5cbe34dffc9847264d |
 | 1987 Ferrari F40 | F40 | CC-BY | Ddiaz Design | 145,903 | | https://sketchfab.com/3d-models/none-80b0cdeb364b4223a006f3be12f16dc4 |
 | 2018 Ferrari 488 Pista | 488 | CC-BY | Maroi Mister | 175,551 | | https://sketchfab.com/3d-models/none-88553964262c439f8b7774b4ae48ec71 |

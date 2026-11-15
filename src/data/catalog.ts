@@ -15,6 +15,8 @@ export type PartCategoryId =
   | 'intake'
   | 'forced-induction'
   | 'cooling'
+  | 'strut-brace'
+  | 'engine-cover'
   | 'nitrous'
   | 'engine-management'
   | 'fluids'
@@ -45,6 +47,8 @@ export const CATEGORIES: PartCategory[] = [
   { id: 'intake', name: 'Intake', group: 'performance', stockLabel: 'Factory airbox' },
   { id: 'forced-induction', name: 'Turbo and supercharger', group: 'performance', stockLabel: 'Naturally aspirated' },
   { id: 'cooling', name: 'Cooling', group: 'performance', stockLabel: 'Factory cooling' },
+  { id: 'strut-brace', name: 'Strut brace', group: 'performance', stockLabel: 'None' },
+  { id: 'engine-cover', name: 'Engine cover', group: 'performance', stockLabel: 'Factory cover' },
   { id: 'nitrous', name: 'Nitrous', group: 'performance', stockLabel: 'None' },
   { id: 'engine-management', name: 'Engine management', group: 'performance', stockLabel: 'Factory ECU' },
   { id: 'fluids', name: 'Oils and fluids', group: 'performance', stockLabel: 'Factory fill' },
@@ -56,9 +60,10 @@ export const CATEGORIES: PartCategory[] = [
   { id: 'audio', name: 'Audio', group: 'interior', stockLabel: 'Factory audio' },
 ];
 
-/** Manufacturer-claimed changes. Positive hp adds power, negative kg saves weight. */
+/** Manufacturer-claimed changes. Positive hp and nm add power and torque, negative kg saves weight. */
 export interface PartClaims {
   hp?: number;
+  nm?: number;
   kg?: number;
 }
 
@@ -95,7 +100,23 @@ export type PartRender =
   | { kind: 'harness'; strapHex: string }
   | { kind: 'bodykit'; widebody: boolean; carbon: boolean }
   | { kind: 'hood'; vented: boolean }
-  | { kind: 'diffuser'; fins: number };
+  | { kind: 'diffuser'; fins: number }
+  | {
+      kind: 'intake';
+      /** A cone filter on a tube, or a carbon housing round the filter. */
+      style: 'cone' | 'carbon';
+      pipeHex: string;
+      filterHex: string;
+    }
+  /** Replaces any factory turbos. Inducer is the compressor wheel's inlet diameter. */
+  | { kind: 'turbo'; count: 1 | 2; inducerMm: number }
+  | { kind: 'supercharger'; style: 'twin-screw' | 'centrifugal' }
+  | { kind: 'radiator' }
+  | { kind: 'intercooler' }
+  /** Bar across the strut towers; a third leg runs back to the firewall. */
+  | { kind: 'strut-brace'; legs: 2 | 3; barHex: string; plateHex: string }
+  /** Carbon cover over the top of the engine. */
+  | { kind: 'engine-cover' };
 
 export interface PartProduct {
   id: string;
@@ -111,6 +132,8 @@ export interface PartProduct {
    * 'needs-adapting' is made for other cars and would need fabrication.
    */
   fit: 'this-car' | 'universal' | 'needs-adapting';
+  /** Ids of the cars the part is made for. When set, it decides the fit per car. */
+  cars?: string[];
   claims?: PartClaims;
   /** How to draw it. Missing means not in 3D yet. */
   render?: PartRender;
@@ -456,6 +479,7 @@ export const CATALOG: PartProduct[] = [
     priceUsd: 2700,
     fit: 'this-car',
     claims: { hp: 15 },
+    render: { kind: 'intake', style: 'carbon', pipeHex: '#1b1c1e', filterHex: '#c9c2b0' },
     verified: false,
   },
   {
@@ -467,6 +491,7 @@ export const CATALOG: PartProduct[] = [
     priceUsd: 380,
     fit: 'needs-adapting',
     claims: { hp: 8 },
+    render: { kind: 'intake', style: 'cone', pipeHex: '#c9cdd1', filterHex: '#c3131c' },
     verified: false,
   },
   {
@@ -478,6 +503,7 @@ export const CATALOG: PartProduct[] = [
     priceUsd: 350,
     fit: 'needs-adapting',
     claims: { hp: 7 },
+    render: { kind: 'intake', style: 'cone', pipeHex: '#a3161b', filterHex: '#2a2c30' },
     verified: false,
   },
 
@@ -490,7 +516,8 @@ export const CATALOG: PartProduct[] = [
     blurb: 'Two G-series turbos, lines and manifolds.',
     priceUsd: 9500,
     fit: 'needs-adapting',
-    claims: { hp: 320 },
+    claims: { hp: 320, nm: 380 },
+    render: { kind: 'turbo', count: 2, inducerMm: 61 },
     verified: false,
   },
   {
@@ -501,7 +528,8 @@ export const CATALOG: PartProduct[] = [
     blurb: 'Drag-style single turbo conversion.',
     priceUsd: 6800,
     fit: 'needs-adapting',
-    claims: { hp: 280 },
+    claims: { hp: 280, nm: 340 },
+    render: { kind: 'turbo', count: 1, inducerMm: 62 },
     verified: false,
   },
   {
@@ -512,7 +540,8 @@ export const CATALOG: PartProduct[] = [
     blurb: 'Positive-displacement blower, instant boost.',
     priceUsd: 8200,
     fit: 'needs-adapting',
-    claims: { hp: 250 },
+    claims: { hp: 250, nm: 300 },
+    render: { kind: 'supercharger', style: 'twin-screw' },
     verified: false,
   },
   {
@@ -523,7 +552,8 @@ export const CATALOG: PartProduct[] = [
     blurb: 'Centrifugal blower with HKS intercooling.',
     priceUsd: 8900,
     fit: 'needs-adapting',
-    claims: { hp: 200 },
+    claims: { hp: 200, nm: 190 },
+    render: { kind: 'supercharger', style: 'centrifugal' },
     verified: false,
   },
 
@@ -536,6 +566,7 @@ export const CATALOG: PartProduct[] = [
     blurb: 'All-aluminium cores for track use.',
     priceUsd: 1900,
     fit: 'this-car',
+    render: { kind: 'radiator' },
     verified: false,
   },
   {
@@ -546,6 +577,83 @@ export const CATALOG: PartProduct[] = [
     blurb: 'Bar-and-plate core for boosted builds.',
     priceUsd: 950,
     fit: 'needs-adapting',
+    render: { kind: 'intercooler' },
+    verified: false,
+  },
+
+  // ----- Strut braces -----
+  {
+    id: 'cusco-os-front',
+    category: 'strut-brace',
+    brand: 'Cusco',
+    model: 'Type OS front strut bar',
+    blurb: 'Alloy bar on steel tower brackets, made in versions for most cars.',
+    priceUsd: 260,
+    fit: 'universal',
+    claims: { kg: 2 },
+    render: { kind: 'strut-brace', legs: 2, barHex: '#c9cdd1', plateHex: '#2c5fb8' },
+    verified: false,
+  },
+  {
+    id: 'ultra-racing-3pt',
+    category: 'strut-brace',
+    brand: 'Ultra Racing',
+    model: '3-point front strut bar',
+    blurb: 'Tower-to-tower bar with a third leg back to the firewall.',
+    priceUsd: 180,
+    fit: 'universal',
+    claims: { kg: 3 },
+    render: { kind: 'strut-brace', legs: 3, barHex: '#2b62c4', plateHex: '#1b1c1e' },
+    verified: false,
+  },
+  {
+    id: 'mugen-strut-bar',
+    category: 'strut-brace',
+    brand: 'Mugen',
+    model: 'Front strut tower bar',
+    blurb: 'Honda-only alloy bar.',
+    priceUsd: 420,
+    fit: 'this-car',
+    cars: ['civic-gen6', 'civic-gen7', 'civic-gen8'],
+    claims: { kg: 2 },
+    render: { kind: 'strut-brace', legs: 2, barHex: '#c9cdd1', plateHex: '#17181a' },
+    verified: false,
+  },
+
+  // ----- Engine covers -----
+  {
+    id: 'novitec-458-bay',
+    category: 'engine-cover',
+    brand: 'Novitec',
+    model: 'Carbon engine compartment',
+    blurb: 'Carbon panels over the 458 bay and plenum.',
+    priceUsd: 6800,
+    fit: 'this-car',
+    cars: ['ferrari-458-spider'],
+    render: { kind: 'engine-cover' },
+    verified: false,
+  },
+  {
+    id: 'mugen-coil-cover',
+    category: 'engine-cover',
+    brand: 'Mugen',
+    model: 'Carbon ignition coil cover',
+    blurb: 'Covers the K20A coil packs.',
+    priceUsd: 350,
+    fit: 'this-car',
+    cars: ['civic-gen7'],
+    render: { kind: 'engine-cover' },
+    verified: false,
+  },
+  {
+    id: 'eventuri-engine-cover',
+    category: 'engine-cover',
+    brand: 'Eventuri',
+    model: 'Carbon engine cover',
+    blurb: 'Pre-preg carbon, made for specific modern engines.',
+    priceUsd: 1300,
+    fit: 'needs-adapting',
+    render: { kind: 'engine-cover' },
     verified: false,
   },
 
@@ -865,6 +973,12 @@ export const CATALOG: PartProduct[] = [
 ];
 
 export const partsIn = (category: PartCategoryId) => CATALOG.filter((p) => p.category === category);
+
+/** How a part fits the given car: by its car list when it has one. */
+export function fitFor(part: PartProduct, carId: string): PartProduct['fit'] {
+  if (!part.cars) return part.fit;
+  return part.cars.includes(carId) ? 'this-car' : 'needs-adapting';
+}
 
 export const FIT_NOTES: Record<PartProduct['fit'], string | null> = {
   'this-car': null,

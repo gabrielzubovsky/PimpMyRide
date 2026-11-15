@@ -3,6 +3,7 @@ dist
 *.local
 .DS_Store
 *:Zone.Identifier
+.env.local
 
 # Raw source models, downloaded by scripts/prepare-car.mjs
 assets-src

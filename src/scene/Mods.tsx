@@ -4,6 +4,8 @@ import { CATALOG, type PartCategoryId, type PartRender } from '../data/catalog';
 import type { CarDef } from '../data/types';
 import { MM } from '../units';
 import { useGarage } from '../state/garage';
+import { EngineBay } from './EngineBay';
+import { bodyEnds } from './ends';
 import type { AxleMount, AxleSetup } from './stance';
 
 // Procedural 3D for catalogue parts, in the same spirit as the wheels: built
@@ -54,7 +56,7 @@ export function WingMod({ car }: { car: CarDef }) {
   const h = spec.heightMm * MM;
   // Mount on the rear deck, worked out from the car's overall size.
   const deckY = car.sizeM.height * 0.78;
-  const deckZ = (car.sizeM.length / 2) * 0.72;
+  const deckZ = bodyEnds(car).tail * 0.72;
   const wingY = deckY + h;
   const mountX = spec.mount === 'swan' ? span * 0.27 : span * 0.22;
 
@@ -112,7 +114,7 @@ export function ExhaustMod({ car }: { car: CarDef }) {
 
   const r = (spec.tipDiameterMm / 2) * MM;
   const y = car.sizeM.height * 0.2;
-  const z = car.sizeM.length / 2 - 0.04;
+  const z = bodyEnds(car).tail - 0.04;
   const finish = TIP_FINISH[spec.finish];
   const valved = spec.system === 'valvetronic';
 
@@ -142,79 +144,7 @@ export function ExhaustMod({ car }: { car: CarDef }) {
   );
 }
 
-// --- Engine bay --------------------------------------------------------------
-
-const CRINKLE_RED = { color: '#a01016', roughness: 0.62, metalness: 0.25 };
-const ALLOY = { color: '#9aa0a5', roughness: 0.38, metalness: 0.9 };
-const BAY_DARK = { color: '#141518', roughness: 0.8, metalness: 0.1 };
-
-/**
- * Stylised mid-engine V8 bay, laid out like the 458's F136: red crinkle intake
- * plenums over the vee, alloy block and cam covers, carbon airboxes at the
- * corners and a brace across the bay. A stand-in, not the real panelling.
- */
-export function EngineBayMod({ car }: { car: CarDef }) {
-  if (!car.engineBay) return null;
-  const [cx, cy, cz] = car.engineBay.center;
-
-  return (
-    <group name="mod-engine-bay" position={[cx, cy, cz]}>
-      {/* Bay tub */}
-      <mesh position={[0, -0.16, 0]}>
-        <boxGeometry args={[1.3, 0.05, 0.95]} />
-        <meshStandardMaterial {...BAY_DARK} />
-      </mesh>
-      {([-1, 1] as const).map((side) => (
-        <mesh key={side} position={[side * 0.64, 0.02, 0]}>
-          <boxGeometry args={[0.05, 0.34, 0.95]} />
-          <meshStandardMaterial {...BAY_DARK} />
-        </mesh>
-      ))}
-      <mesh position={[0, 0.02, -0.46]}>
-        <boxGeometry args={[1.3, 0.34, 0.05]} />
-        <meshStandardMaterial {...BAY_DARK} />
-      </mesh>
-      {/* Block and heads */}
-      <mesh position={[0, -0.02, 0]}>
-        <boxGeometry args={[0.6, 0.24, 0.5]} />
-        <meshStandardMaterial color="#5c6066" roughness={0.45} metalness={0.85} />
-      </mesh>
-      {/* Cam covers on the 90-degree vee */}
-      {([-1, 1] as const).map((side) => (
-        <mesh key={side} position={[side * 0.21, 0.13, 0]} rotation={[0, 0, side * -0.55]}>
-          <boxGeometry args={[0.3, 0.05, 0.48]} />
-          <meshStandardMaterial {...CRINKLE_RED} />
-        </mesh>
-      ))}
-      {/* Intake plenums over each bank */}
-      {([-1, 1] as const).map((side) => (
-        <mesh key={side} position={[side * 0.17, 0.23, 0]} rotation={[Math.PI / 2, 0, 0]}>
-          <cylinderGeometry args={[0.085, 0.085, 0.52, 18]} />
-          <meshStandardMaterial {...CRINKLE_RED} />
-        </mesh>
-      ))}
-      {/* Centre manifold between the plenums */}
-      <mesh position={[0, 0.2, 0]}>
-        <boxGeometry args={[0.16, 0.1, 0.44]} />
-        <meshStandardMaterial {...ALLOY} />
-      </mesh>
-      {/* Carbon airboxes feeding each bank */}
-      {([-1, 1] as const).map((side) => (
-        <mesh key={side} position={[side * 0.47, 0.16, 0.3]} rotation={[0, side * 0.3, 0]}>
-          <boxGeometry args={[0.26, 0.14, 0.22]} />
-          <meshStandardMaterial {...CARBON} />
-        </mesh>
-      ))}
-      {/* Brace across the bay */}
-      {([-1, 1] as const).map((side) => (
-        <mesh key={side} position={[side * 0.3, 0.3, -0.18]} rotation={[0, 0, side * 1.1]}>
-          <cylinderGeometry args={[0.014, 0.014, 0.62, 10]} />
-          <meshStandardMaterial {...ALLOY} />
-        </mesh>
-      ))}
-    </group>
-  );
-}
+// The engine bay (bay, engine and engine-bay parts) lives in EngineBay.tsx.
 
 // --- Nitrous bottle ----------------------------------------------------------
 
@@ -333,7 +263,7 @@ export function GaugeMod({ car }: { car: CarDef }) {
   const { height: h, wheelbase } = car.sizeM;
   const dashY = h * 0.6;
   const dashZ = -wheelbase * 0.15;
-  const driverX = -0.33;
+  const driverX = car.rhd ? 0.33 : -0.33; // gauges face the driver
 
   if (spec.screen) {
     // A dash logger: one wide screen where the cluster sits.
@@ -448,7 +378,7 @@ export function SteeringMod({ car }: { car: CarDef }) {
   return (
     <group
       name="mod-steering"
-      position={[-0.33, car.sizeM.height * 0.55, -car.sizeM.wheelbase * 0.08]}
+      position={[car.rhd ? 0.33 : -0.33, car.sizeM.height * 0.55, -car.sizeM.wheelbase * 0.08]}
       rotation={[-0.35, 0, 0]}
     >
       {/* Rim */}
@@ -544,7 +474,7 @@ export function BodyKitMod({ car, mounts }: { car: CarDef; mounts: { front: Axle
   const dedicatedDiffuser = useRender('diffuser', 'diffuser');
   if (!spec) return null;
 
-  const { width: w, length: l, wheelbase } = car.sizeM;
+  const { width: w, wheelbase } = car.sizeM;
   const finish = spec.carbon ? CARBON : spec.widebody ? SATIN_BLACK : FIBREGLASS;
 
   return (
@@ -569,7 +499,7 @@ export function BodyKitMod({ car, mounts }: { car: CarDef; mounts: { front: Axle
           }),
         )}
       {/* Front lip */}
-      <mesh position={[0, 0.09, -(l / 2) * 0.93]}>
+      <mesh position={[0, 0.09, bodyEnds(car).nose * 0.93]}>
         <boxGeometry args={[w * 0.88, 0.045, 0.3]} />
         <meshStandardMaterial {...finish} />
       </mesh>
@@ -582,7 +512,7 @@ export function BodyKitMod({ car, mounts }: { car: CarDef; mounts: { front: Axle
       ))}
       {/* Rear diffuser, unless a dedicated one is fitted */}
       {!dedicatedDiffuser && (
-        <mesh position={[0, 0.12, (l / 2) * 0.9]} rotation={[0.25, 0, 0]}>
+        <mesh position={[0, 0.12, bodyEnds(car).tail * 0.9]} rotation={[0.25, 0, 0]}>
           <boxGeometry args={[w * 0.7, 0.04, 0.34]} />
           <meshStandardMaterial {...finish} />
         </mesh>
@@ -596,7 +526,9 @@ export function BodyKitMod({ car, mounts }: { car: CarDef; mounts: { front: Axle
 /** Carbon skin over the bonnet, with a vent slot when the hood has one. */
 export function HoodMod({ car }: { car: CarDef }) {
   const spec = useRender('hood', 'hood');
-  if (!spec) return null;
+  // With the bonnet lifted off for the engine view, the hood goes with it.
+  const bayOpen = useGarage((s) => s.view === 'engine') && car.engine.position === 'front';
+  if (!spec || bayOpen) return null;
 
   const { width: w, length: l, height: h } = car.sizeM;
   return (
@@ -622,10 +554,10 @@ export function DiffuserMod({ car }: { car: CarDef }) {
   const spec = useRender('diffuser', 'diffuser');
   if (!spec) return null;
 
-  const { width: w, length: l } = car.sizeM;
+  const { width: w } = car.sizeM;
   const plateW = w * 0.72;
   return (
-    <group name="mod-diffuser" position={[0, 0.13, (l / 2) * 0.9]} rotation={[0.3, 0, 0]}>
+    <group name="mod-diffuser" position={[0, 0.13, bodyEnds(car).tail * 0.9]} rotation={[0.3, 0, 0]}>
       <mesh>
         <boxGeometry args={[plateW, 0.035, 0.36]} />
         <meshStandardMaterial {...CARBON} />
@@ -659,7 +591,7 @@ export function BodyMods({ car, mounts }: { car: CarDef; mounts: { front: AxleMo
       <BodyKitMod car={car} mounts={mounts} />
       <HoodMod car={car} />
       <DiffuserMod car={car} />
-      <EngineBayMod car={car} />
+      <EngineBay car={car} />
     </>
   );
 }

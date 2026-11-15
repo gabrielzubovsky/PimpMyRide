@@ -96,9 +96,25 @@ export const FERRARI_458: CarDef = {
     },
   },
 
-  // The F136 V8 sits behind the cabin. In the engine view the rear deck is
-  // clipped away above and behind these limits so the bay shows.
-  engineBay: { center: [0, 0.5, 1.32], clipY: 0.78, clipZ: 0.98 },
+  engine: {
+    name: 'F136 FB 4.5 V8',
+    layout: 'v',
+    cylinders: 8,
+    displacementL: 4.5,
+    bankAngleDeg: 90,
+    mounting: 'longitudinal',
+    position: 'mid',
+    aspiration: 'na',
+    hp: 562, // 570 PS
+    torqueNm: 540,
+    coverHex: '#a01016',
+    crinkle: true,
+  },
+  weightKg: 1505, // approx
+  // The V8 sits behind the cabin, ahead of the rear axle. In the engine view
+  // the rear deck is clipped away above and behind these limits so the bay
+  // shows. Measured against the model, not the real car.
+  engineBay: { center: [0, 0.42, 1.32], clipY: 0.78, clipZ: 0.98, width: 1.3 },
 
   lift: { heightM: 1.45, contactM: 0.15, runnerX: 0.66, runnerZ: 0.2, runnerLength: 1.5 },
 
@@ -125,7 +141,7 @@ export const FERRARI_458: CarDef = {
       maxDistance: 4,
       minPolar: 5,
       maxPolar: 80,
-      note: 'Rear deck lifted away. The bay is a stylised stand-in, not the real panelling.',
+      note: 'Rear deck lifted away. The F136 V8 and its bay are stylised stand-ins, sized from the real engine.',
     },
     {
       id: 'interior',
@@ -232,6 +248,22 @@ export const PORSCHE_992: CarDef = {
     },
   },
 
+  engine: {
+    name: '3.0 twin-turbo flat-six (9A2 Evo)',
+    layout: 'flat',
+    cylinders: 6,
+    displacementL: 3.0,
+    mounting: 'longitudinal',
+    position: 'rear',
+    aspiration: 'twin-turbo',
+    hp: 443, // 450 PS
+    torqueNm: 530,
+    coverHex: '#1c1d20',
+  },
+  weightKg: 1565, // approx
+  // Hung out behind the rear axle (z = 1.17 in this model), under the deck lid.
+  engineBay: { center: [0, 0.45, 1.45], clipY: 0.68, clipZ: 0.95, width: 1.2 },
+
   lift: { heightM: 1.45, contactM: 0.12, runnerX: 0.62, runnerZ: 0, runnerLength: 1.4 },
 
   views: [
@@ -257,7 +289,7 @@ export const PORSCHE_992: CarDef = {
       maxDistance: 4,
       minPolar: 5,
       maxPolar: 80,
-      note: 'The flat-six sits under the rear decklid. Nothing is modelled in there yet.',
+      note: 'Deck lid lifted away. The flat-six and its bay are stylised stand-ins, sized from the real engine.',
     },
     {
       id: 'interior',

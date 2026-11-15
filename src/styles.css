@@ -479,6 +479,50 @@ p {
   font-size: 22px;
 }
 
+/* Factory figures beside the build's, like the spec panel on a dyno sheet. */
+.stats {
+  display: grid;
+  gap: 3px;
+  font-size: 14px;
+}
+
+.stats-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 86px 86px;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.stats-row > :not(:first-child) {
+  text-align: right;
+}
+
+.stats-head {
+  padding-bottom: 3px;
+  border-bottom: 1px solid var(--rule);
+  color: var(--ink-soft);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.stats-head > :first-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.stats [data-change='none'] {
+  color: var(--ink-soft);
+}
+
+.stats [data-change='better'] {
+  color: var(--tape);
+}
+
+.stats [data-change='worse'] {
+  color: #a3261c;
+}
+
 .reset {
   justify-self: start;
   margin-top: 4px;

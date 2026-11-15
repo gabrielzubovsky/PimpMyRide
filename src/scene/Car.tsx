@@ -8,6 +8,7 @@ import { tyreOuterRadius } from '../parts/tyre';
 import { MM } from '../units';
 import { useGarage, useSelection } from '../state/garage';
 import { AxleAssembly } from './Corners';
+import { bayClipPlanes, bayFor } from './EngineBay';
 import { Lift } from './Lift';
 import { BodyMods, CoiloverMod, useRender } from './Mods';
 import { axleSetup, bodyDeltaAt, bodyPose, type AxleMount } from './stance';
@@ -90,6 +91,23 @@ function Chassis({ mounts, children }: { mounts: Mounts; children: ReactNode }) 
   );
 }
 
+/**
+ * Looks a node up by the name it has in the GLB. three.js's loader strips
+ * characters it reserves for animation paths (such as '.') from node names,
+ * so "Plane.002_0" in the file is "Plane002_0" once loaded.
+ */
+function findNode(scene: THREE.Object3D, name: string) {
+  return scene.getObjectByName(name) ?? scene.getObjectByName(THREE.PropertyBinding.sanitizeNodeName(name));
+}
+
+/** Cut a material with clipping planes, or stop cutting it with null. */
+function setClipping(material: THREE.Material, planes: THREE.Plane[] | null) {
+  material.clippingPlanes = planes;
+  // Clip only where a point is past every plane: above the bay AND over it.
+  material.clipIntersection = planes !== null;
+  material.needsUpdate = true;
+}
+
 // --- A car with a real model ------------------------------------------------
 
 /** Reads the wheel attachment points out of the model. */
@@ -147,20 +165,39 @@ function ModelCar() {
     [paint, glass, leather],
   );
 
-  // Swap our materials onto the meshes named in the car's data.
+  // Swap our materials onto the parts named in the car's data. A name can be
+  // a mesh's name or its material's: prepare-sketchfab.mjs names materials
+  // 'paint', 'glass' and 'leather' so parts that share a mesh stay apart.
   useLayoutEffect(() => {
     const nodes = car.nodes;
     if (!nodes) return;
-    const assign = (names: string[], material: THREE.Material) => {
+    const roles: Array<[string[], THREE.Material]> = [
+      [nodes.paint, paint],
+      [nodes.glass, glass],
+      [nodes.leather, leather],
+    ];
+    // Read every mesh's original material name before any are replaced.
+    const meshes: Array<{ mesh: THREE.Mesh; material: string }> = [];
+    scene.traverse((obj) => {
+      if (obj instanceof THREE.Mesh && !Array.isArray(obj.material)) meshes.push({ mesh: obj, material: obj.material.name });
+    });
+    for (const [names, material] of roles) {
       for (const name of names) {
-        const mesh = scene.getObjectByName(name);
-        if (mesh instanceof THREE.Mesh) mesh.material = material;
-        else console.warn(`Model has no mesh named "${name}"`);
+        let found = false;
+        const node = findNode(scene, name);
+        if (node instanceof THREE.Mesh) {
+          node.material = material;
+          found = true;
+        }
+        for (const m of meshes) {
+          if (m.material === name) {
+            m.mesh.material = material;
+            found = true;
+          }
+        }
+        if (!found) console.warn(`Model has no mesh or material named "${name}"`);
       }
-    };
-    assign(nodes.paint, paint);
-    assign(nodes.glass, glass);
-    assign(nodes.leather, leather);
+    }
   }, [scene, car, paint, glass, leather]);
 
   useLayoutEffect(() => {
@@ -180,36 +217,26 @@ function ModelCar() {
     leather.color.set(car.leatherColors.find((c) => c.id === leatherId)?.hex ?? '#131313');
   }, [leather, car, leatherId]);
 
-  // In the engine view, clip away the body above and behind the bay limits,
-  // as if the rear deck were lifted off the car.
+  // In the engine view, clip away the body over the bay, as if the bonnet or
+  // deck lid were lifted off the car.
   const view = useGarage((s) => s.view);
+  const bay = useMemo(() => bayFor(car), [car]);
   useLayoutEffect(() => {
-    const bay = car.engineBay;
     if (!bay) return;
-    const planes =
-      view === 'engine'
-        ? [
-            new THREE.Plane(new THREE.Vector3(0, -1, 0), bay.clipY),
-            new THREE.Plane(new THREE.Vector3(0, 0, -1), bay.clipZ),
-          ]
-        : null;
+    const planes = view === 'engine' ? bayClipPlanes(bay) : null;
     scene.traverse((obj) => {
       if (!(obj instanceof THREE.Mesh)) return;
       const materials = Array.isArray(obj.material) ? obj.material : [obj.material];
-      for (const material of materials) {
-        material.clippingPlanes = planes;
-        material.clipIntersection = planes !== null;
-        material.needsUpdate = true;
-      }
+      for (const material of materials) setClipping(material, planes);
     });
-  }, [scene, car, view]);
+  }, [scene, bay, view]);
 
   // Swap out the factory steering wheel when an aftermarket one is fitted.
   const aftermarketWheel = useRender('steering', 'steering');
   useLayoutEffect(() => {
     const name = car.nodes?.steering;
     if (!name) return;
-    const node = scene.getObjectByName(name);
+    const node = findNode(scene, name);
     if (node) node.visible = !aftermarketWheel;
   }, [scene, car, aftermarketWheel]);
 
@@ -295,6 +322,15 @@ function OutlineCar() {
   useLayoutEffect(() => {
     cabin.opacity = THREE.MathUtils.lerp(0.15, 0.5, tint);
   }, [cabin, tint]);
+
+  // Open the outline over the engine bay in the engine view.
+  const view = useGarage((s) => s.view);
+  useLayoutEffect(() => {
+    const bay = bayFor(car);
+    const planes = bay && view === 'engine' ? bayClipPlanes(bay) : null;
+    setClipping(body, planes);
+    setClipping(cabin, planes);
+  }, [car, view, body, cabin]);
 
   return (
     <Chassis mounts={mounts}>

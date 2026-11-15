@@ -11,6 +11,7 @@ export type BrandField =
   | 'intake'
   | 'forced-induction'
   | 'cooling'
+  | 'engine-bay'
   | 'nitrous'
   | 'engine-management'
   | 'fluids'
@@ -74,7 +75,8 @@ export const BRANDS: Brand[] = [
   { id: 'hr', name: 'H&R', country: 'Germany', fields: ['suspension'], note: 'Springs and spacers.' },
   { id: 'airlift', name: 'Air Lift Performance', country: 'USA', fields: ['suspension'], note: 'Air ride with height presets.' },
   { id: 'accuair', name: 'AccuAir', country: 'USA', fields: ['suspension'], note: 'Air-ride management.' },
-  { id: 'cusco', name: 'Cusco', country: 'Japan', fields: ['suspension', 'roll-cage'], note: 'Braces, sway bars and Safety 21 cages.' },
+  { id: 'cusco', name: 'Cusco', country: 'Japan', fields: ['suspension', 'roll-cage', 'engine-bay'], note: 'Braces, sway bars and Safety 21 cages.' },
+  { id: 'ultra-racing', name: 'Ultra Racing', country: 'Malaysia', fields: ['suspension', 'engine-bay'], note: 'Strut bars and chassis braces.' },
   { id: 'whiteline', name: 'Whiteline', country: 'Australia', fields: ['suspension'], note: 'Bushings and sway bars.' },
 
   // Brakes
@@ -103,7 +105,7 @@ export const BRANDS: Brand[] = [
   { id: 'kn', name: 'K&N', country: 'USA', fields: ['intake'], note: 'Washable cotton filters and Typhoon intakes.' },
   { id: 'aem', name: 'AEM', country: 'USA', fields: ['intake', 'gauges', 'engine-management'], note: 'Intakes, widebands, standalone ECUs.' },
   { id: 'injen', name: 'Injen', country: 'USA', fields: ['intake'] },
-  { id: 'eventuri', name: 'Eventuri', country: 'UK', fields: ['intake'], note: 'Carbon-fibre inverted-cone intakes.' },
+  { id: 'eventuri', name: 'Eventuri', country: 'UK', fields: ['intake', 'engine-bay'], note: 'Carbon-fibre inverted-cone intakes and engine covers.' },
 
   // Forced induction
   { id: 'garrett', name: 'Garrett', country: 'USA', fields: ['forced-induction'], note: 'G-series turbos.' },
@@ -169,10 +171,10 @@ export const BRANDS: Brand[] = [
   { id: 'apr-performance', name: 'APR Performance', country: 'USA', fields: ['aero'], note: 'GTC carbon wings and splitters.' },
   { id: 'seibon', name: 'Seibon Carbon', country: 'USA', fields: ['body-kit', 'aero'], note: 'Carbon hoods and trunks.' },
   { id: 'mansory', name: 'Mansory', country: 'Germany', fields: ['body-kit'], note: 'Full carbon conversions for exotics.' },
-  { id: 'novitec', name: 'Novitec', country: 'Germany', fields: ['body-kit', 'aero', 'suspension', 'exhaust'], note: 'Ferrari and Lamborghini tuner.' },
+  { id: 'novitec', name: 'Novitec', country: 'Germany', fields: ['body-kit', 'aero', 'suspension', 'exhaust', 'engine-bay'], note: 'Ferrari and Lamborghini tuner.' },
   { id: 'vorsteiner', name: 'Vorsteiner', country: 'USA', fields: ['body-kit', 'aero'] },
   { id: 'duraflex', name: 'Duraflex (Extreme Dimensions)', country: 'USA', fields: ['body-kit'], note: 'Budget fibreglass kits.' },
-  { id: 'mugen', name: 'Mugen', country: 'Japan', fields: ['body-kit', 'aero', 'exhaust'], note: 'Honda’s house tuner.' },
+  { id: 'mugen', name: 'Mugen', country: 'Japan', fields: ['body-kit', 'aero', 'exhaust', 'engine-bay'], note: 'Honda’s house tuner.' },
   { id: 'nismo', name: 'NISMO', country: 'Japan', fields: ['body-kit', 'aero', 'suspension'], note: 'Nissan motorsport.' },
   { id: 'trd', name: 'TRD', country: 'Japan', fields: ['body-kit', 'aero', 'suspension'], note: 'Toyota Racing Development.' },
 

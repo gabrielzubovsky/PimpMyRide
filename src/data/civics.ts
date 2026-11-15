@@ -1,4 +1,4 @@
-import type { AxleFitment, BrakeFitment, CameraView, CarDef, Fitment, PaintColor } from './types';
+import type { AxleFitment, BrakeFitment, CameraView, CarDef, EngineSpec, Fitment, PaintColor } from './types';
 
 // Every generation of the Honda Civic, as catalogue data. None of them has a
 // 3D model yet, so they draw as a translucent outline (modelUrl: null) until
@@ -45,10 +45,24 @@ export const INTERIORS = [
   { id: 'red-black', name: 'Red and black', hex: '#8c1518' },
 ];
 
-/** Camera presets sized from the car's dimensions. Front of the car is -z. */
-export function viewsFor(size: CarDef['sizeM']): CameraView[] {
+/** Where the driver's eyes are, from the car's size. Right-hand drive mirrors it. */
+export function driverEye(size: CarDef['sizeM'], rhd = false): [number, number, number] {
+  return [rhd ? 0.35 : -0.35, size.height * 0.72, size.wheelbase * 0.08];
+}
+
+/**
+ * Camera presets sized from the car's dimensions. Front of the car is -z.
+ * `eye` overrides the driver's eye position when a model's seats sit
+ * elsewhere than the dimensions suggest.
+ */
+export function viewsFor(
+  size: CarDef['sizeM'],
+  engine: EngineSpec,
+  { rhd = false, eye }: { rhd?: boolean; eye?: [number, number, number] } = {},
+): CameraView[] {
   const f = size.length / 4.5;
-  const headY = size.height * 0.72;
+  const head = eye ?? driverEye(size, rhd);
+  const side = rhd ? 1 : -1;
   return [
     {
       id: 'exterior',
@@ -72,13 +86,13 @@ export function viewsFor(size: CarDef['sizeM']): CameraView[] {
       maxDistance: 4,
       minPolar: 5,
       maxPolar: 80,
-      note: 'The engine sits under the bonnet. Nothing is modelled in there yet.',
+      note: `Bonnet lifted away. The ${engine.name} is a stylised stand-in, sized from its layout and displacement.`,
     },
     {
       id: 'interior',
       name: 'Interior',
-      position: [-0.35, headY, size.wheelbase * 0.08],
-      target: [-0.15, headY - 0.16, -0.75],
+      position: head,
+      target: [side * 0.15, head[1] - 0.16, head[2] - 0.83],
       fov: 72,
       minDistance: 0.05,
       maxDistance: 0.05,
@@ -115,6 +129,9 @@ interface CivicGen {
   rear: BrakeFitment;
   /** Rear drums drawn as small discs until the generator knows drums. */
   rearIsDrum?: boolean;
+  engine: EngineSpec;
+  /** Kerb weight of the variant the engine belongs to. */
+  weightKg: number;
   fitments: Fitment[];
   paints: PaintColor[];
   /** Steel wheels from the factory; later gens shipped alloys. */
@@ -150,11 +167,43 @@ function civic(g: CivicGen): CarDef {
       runnerZ: 0,
       runnerLength: wheelbase * 0.55,
     },
-    views: viewsFor(size),
+    engine: g.engine,
+    weightKg: g.weightKg,
+    views: viewsFor(size, g.engine),
   };
 }
 
 export const paint = (id: string, name: string, hex: string, finish: PaintColor['finish'] = 'gloss'): PaintColor => ({ id, name, hex, finish });
+
+/**
+ * Every Civic engine is a transverse inline-four. Up to the EK the exhaust
+ * faces the radiator; from the EP3's K-series on, Honda turned the engine
+ * round so the exhaust faces the firewall.
+ */
+const hondaFour = (
+  name: string,
+  displacementL: number,
+  hp: number,
+  torqueNm: number,
+  more: Partial<EngineSpec> = {},
+): EngineSpec => ({
+  name,
+  layout: 'inline',
+  cylinders: 4,
+  displacementL,
+  hp,
+  torqueNm,
+  mounting: 'transverse',
+  position: 'front',
+  aspiration: 'na',
+  coverHex: '#2b2c2f',
+  exhaustFacing: 'front',
+  ...more,
+});
+
+// Power, torque and weight are factory figures for the headline variant of
+// each generation, from memory: approx until checked.
+const TYPE_R_RED = { coverHex: '#a3141a', crinkle: true };
 
 export const CIVICS: CarDef[] = [
   civic({
@@ -171,6 +220,8 @@ export const CIVICS: CarDef[] = [
     rearIsDrum: true,
     steelWheels: true,
     ride: { min: -70, max: 30 },
+    weightKg: 680,
+    engine: hondaFour('EB1 1.2 I4', 1.17, 50, 69),
     fitments: [
       square('stock', 'Stock size', 'Factory 12-inch steel wheels.', ax(12, 4, 35, 145, 70)),
       square('classic-13', 'Classic 13s', 'Period-style wide 13s tucked under the arches.', ax(13, 7, 10, 175, 50)),
@@ -196,6 +247,8 @@ export const CIVICS: CarDef[] = [
     rearIsDrum: true,
     steelWheels: true,
     ride: { min: -70, max: 30 },
+    weightKg: 790,
+    engine: hondaFour('EM1 1.5 CVCC I4', 1.49, 67, 106),
     fitments: [
       square('stock', 'Stock size', 'Factory 13-inch steel wheels.', ax(13, 4.5, 35, 155, 80)),
       square('13-wide', 'Wide 13s', 'Wider 13s on a low offset.', ax(13, 7, 15, 185, 60)),
@@ -221,6 +274,8 @@ export const CIVICS: CarDef[] = [
     rearIsDrum: true,
     steelWheels: true,
     ride: { min: -75, max: 30 },
+    weightKg: 890,
+    engine: hondaFour('D15 1.5 I4', 1.49, 91, 127),
     fitments: [
       square('stock', 'Stock size', 'Factory 13s.', ax(13, 5, 45, 175, 70)),
       square('14-sport', 'Sport 14s', 'A size up, as the period tuners ran.', ax(14, 6, 38, 185, 60)),
@@ -245,6 +300,8 @@ export const CIVICS: CarDef[] = [
     rear: brake(239, 10, 1, 'ahead'),
     steelWheels: true,
     ride: { min: -80, max: 30 },
+    weightKg: 1000,
+    engine: hondaFour('B16A 1.6 VTEC I4', 1.6, 158, 150),
     fitments: [
       square('stock', 'Stock size', 'Factory 13s.', ax(13, 5, 45, 175, 70)),
       square('15-track', 'Track 15s', 'The classic lightweight-15 track setup.', ax(15, 6.5, 40, 195, 50)),
@@ -268,6 +325,8 @@ export const CIVICS: CarDef[] = [
     front: brake(262, 21, 1, 'behind'),
     rear: brake(239, 10, 1, 'ahead'),
     ride: { min: -80, max: 30 },
+    weightKg: 1050,
+    engine: hondaFour('B16A 1.6 VTEC I4', 1.6, 168, 157),
     fitments: [
       square('stock', 'Stock size', 'Factory 14s.', ax(14, 5.5, 45, 185, 60)),
       square('15-track', 'Track 15s', 'Wide 15s, the time-attack staple.', ax(15, 8, 35, 205, 50)),
@@ -293,6 +352,8 @@ export const CIVICS: CarDef[] = [
     front: brake(262, 21, 1, 'behind'),
     rear: brake(239, 10, 1, 'ahead'),
     ride: { min: -80, max: 30 },
+    weightKg: 1050,
+    engine: hondaFour('B16B 1.6 VTEC I4 (EK9 Type R)', 1.6, 182, 160, TYPE_R_RED),
     fitments: [
       square('stock', 'Stock size', 'Factory 14s.', ax(14, 5.5, 45, 185, 65)),
       square('15-track', 'Track 15s', 'Wide 15s, Type R style.', ax(15, 8, 35, 205, 50)),
@@ -318,6 +379,8 @@ export const CIVICS: CarDef[] = [
     front: brake(262, 21, 1, 'behind'),
     rear: brake(239, 10, 1, 'ahead'),
     ride: { min: -70, max: 30 },
+    weightKg: 1190,
+    engine: hondaFour('K20A 2.0 i-VTEC I4 (EP3 Type R)', 2.0, 212, 202, { ...TYPE_R_RED, exhaustFacing: 'rear' }),
     fitments: [
       square('stock', 'Stock size', 'Factory 15s.', ax(15, 6, 45, 195, 60)),
       square('17-street', 'Street 17s', 'Seventeens on a 40-series tyre.', ax(17, 7, 42, 205, 40)),
@@ -341,6 +404,8 @@ export const CIVICS: CarDef[] = [
     front: brake(282, 23, 1, 'behind'),
     rear: brake(260, 10, 1, 'ahead'),
     ride: { min: -65, max: 25 },
+    weightKg: 1230,
+    engine: hondaFour('R18 1.8 i-VTEC I4', 1.8, 140, 174, { exhaustFacing: 'rear' }),
     fitments: [
       square('stock', 'Stock size', 'Factory 16s.', ax(16, 6.5, 45, 205, 55)),
       square('18-street', 'Street 18s', 'Eighteens on a 40-series tyre.', ax(18, 7.5, 45, 225, 40)),
@@ -365,6 +430,8 @@ export const CIVICS: CarDef[] = [
     front: brake(282, 23, 1, 'behind'),
     rear: brake(260, 10, 1, 'ahead'),
     ride: { min: -65, max: 25 },
+    weightKg: 1250,
+    engine: hondaFour('R18 1.8 i-VTEC I4', 1.8, 140, 174, { exhaustFacing: 'rear' }),
     fitments: [
       square('stock', 'Stock size', 'Factory 16s.', ax(16, 6.5, 45, 205, 55)),
       square('18-street', 'Street 18s', 'Eighteens on a 40-series tyre.', ax(18, 7.5, 45, 225, 40)),
@@ -389,6 +456,8 @@ export const CIVICS: CarDef[] = [
     front: brake(282, 23, 1, 'behind'),
     rear: brake(280, 10, 1, 'ahead'),
     ride: { min: -60, max: 25 },
+    weightKg: 1415,
+    engine: hondaFour('K20C1 2.0 turbo I4 (FK8 Type R)', 2.0, 306, 400, { ...TYPE_R_RED, exhaustFacing: 'rear', aspiration: 'turbo' }),
     fitments: [
       square('stock', 'Stock size', 'Factory 17s.', ax(17, 7, 45, 215, 50)),
       square('18-wide', 'Wide 18s', 'Square wide 18s, the grip setup.', ax(18, 9.5, 38, 265, 35)),
@@ -414,6 +483,8 @@ export const CIVICS: CarDef[] = [
     front: brake(312, 25, 1, 'behind'),
     rear: brake(280, 11, 1, 'ahead'),
     ride: { min: -60, max: 25 },
+    weightKg: 1430,
+    engine: hondaFour('K20C1 2.0 turbo I4 (FL5 Type R)', 2.0, 315, 420, { ...TYPE_R_RED, exhaustFacing: 'rear', aspiration: 'turbo' }),
     fitments: [
       square('stock', 'Stock size', 'Factory 17s.', ax(17, 7, 45, 215, 55)),
       square('18-sport', 'Sport 18s', 'The Si and Sport size.', ax(18, 8, 45, 235, 40)),

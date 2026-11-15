@@ -109,6 +109,48 @@ export interface BrakeFitment {
   caliperSide: 'ahead' | 'behind';
 }
 
+/**
+ * The engine a car ships with, as plain specs. The engine-bay generator
+ * (src/parts/engine.ts) sizes the block, heads and manifolds from these, the
+ * same way the wheel generator works from diameter, width and offset.
+ */
+export interface EngineSpec {
+  /** Engine code and size as people know it, e.g. "2JZ-GTE 3.0 twin-turbo I6". */
+  name: string;
+  /** Cylinder arrangement. Flat engines are boxers: two banks lying down. */
+  layout: 'inline' | 'v' | 'flat' | 'rotary';
+  /** Number of cylinders, or rotors for a rotary. */
+  cylinders: number;
+  displacementL: number;
+  /** Angle between the two banks of a V engine, in degrees. */
+  bankAngleDeg?: number;
+  /** Crankshaft along the car (longitudinal) or across it (transverse). */
+  mounting: 'longitudinal' | 'transverse';
+  /** Ahead of the cabin, behind the cabin but ahead of the rear axle, or behind the rear axle. */
+  position: 'front' | 'mid' | 'rear';
+  aspiration: 'na' | 'turbo' | 'twin-turbo';
+  /** Factory-claimed peak power and torque, at the crank. */
+  hp: number;
+  torqueNm: number;
+  /** Air-cooled engines carry a big fan and no radiator. */
+  airCooled?: boolean;
+  /** Colour of the cam covers, the part people recognise first. */
+  coverHex: string;
+  /** Wrinkle-finish covers (Ferrari red, Honda Type R red) rather than smooth paint. */
+  crinkle?: boolean;
+  /**
+   * Transverse engines only: which way the exhaust manifold faces. Most face
+   * the radiator; Honda's K-series turned the engine round so it faces the firewall.
+   */
+  exhaustFacing?: 'front' | 'rear';
+  /**
+   * Longitudinal engines only: which end the gearbox bolts to. Defaults to the
+   * rear for front- and mid-engined cars, and the front for rear-engined ones.
+   * The Countach is the odd one out: its gearbox sits ahead of the engine.
+   */
+  gearbox?: 'front' | 'rear';
+}
+
 export interface CarDef {
   id: string;
   make: string;
@@ -150,15 +192,29 @@ export interface CarDef {
     steering?: string;
     mounts: Record<Corner, string>;
   };
+  engine: EngineSpec;
+  /** Factory kerb weight: ready to drive, fluids in, no driver. */
+  weightKg: number;
+  /** Right-hand drive: the steering wheel is on the right (+x). Left-hand drive when unset. */
+  rhd?: boolean;
   /**
-   * A procedural engine bay. `center` is where the engine sits in model space.
-   * In the engine view, everything above `clipY` and beyond `clipZ` is clipped
-   * away, as if the cover were lifted off.
+   * z of the front and rear of the body, for models centred between their
+   * axles (overhangs differ front to rear). Unset means ±length / 2.
+   */
+  bodyEndsZ?: [number, number];
+  /**
+   * Where the engine bay sits in the model, for cars with a real model. Cars
+   * drawn as outlines work this out from their dimensions instead.
+   * `center` is the crankshaft centre. In the engine view, everything above
+   * `clipY` and beyond `clipZ` (toward the engine's end of the car) is clipped
+   * away, as if the bonnet or deck lid were lifted off.
    */
   engineBay?: {
     center: [number, number, number];
     clipY: number;
     clipZ: number;
+    /** Inside width of the bay, in metres. */
+    width: number;
   };
   lift: {
     /** How far the lift raises the car. */

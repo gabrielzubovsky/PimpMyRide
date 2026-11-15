@@ -1,12 +1,13 @@
 import { useState, type ReactNode } from 'react';
 import { CARS } from '../data/cars';
-import { CATEGORIES, FIT_NOTES, partsIn, type PartCategory, type PartCategoryId } from '../data/catalog';
+import { CATEGORIES, FIT_NOTES, fitFor, partsIn, type PartCategory, type PartCategoryId } from '../data/catalog';
 import { PAINT_FINISHES } from '../data/paint';
 import type { AxleFitment, ViewId } from '../data/types';
 import { WHEELS, wheelOffersFitment } from '../data/wheels';
 import type { WheelDesign } from '../parts/wheel';
 import { useGarage, useSelection, useUpgrades } from '../state/garage';
 import { formatRide, formatTint, formatTyre, formatUsd, formatWheel } from './format';
+import { Stats } from './Stats';
 
 // The build sheet is both the summary of the build and the way to change it.
 // Each line shows the current choice; opening a line reveals its options.
@@ -48,8 +49,6 @@ export function BuildSheet() {
   const wheelSet = wheel.priceUsdEach === null ? null : wheel.priceUsdEach * 4;
   const upgrades = useUpgrades();
   const partsTotal = (wheelSet ?? 0) + upgrades.reduce((sum, p) => sum + p.priceUsd, 0);
-  const claimedHp = upgrades.reduce((sum, p) => sum + (p.claims?.hp ?? 0), 0);
-  const claimedKg = upgrades.reduce((sum, p) => sum + (p.claims?.kg ?? 0), 0);
 
   return (
     <aside className="sheet" aria-label="Build sheet">
@@ -76,7 +75,7 @@ export function BuildSheet() {
                     {c.make} {c.model}
                   </span>
                   <span className="option-note">
-                    {c.years}
+                    {c.years}, {c.engine.name}
                     {c.modelUrl === null ? ' — outline only, no 3D model yet' : ''}
                   </span>
                 </span>
@@ -246,21 +245,12 @@ export function BuildSheet() {
           <span>Parts so far</span>
           <span className="spec">{partsTotal === 0 ? 'All factory' : formatUsd(partsTotal)}</span>
         </div>
-        {(claimedHp !== 0 || claimedKg !== 0) && (
-          <div className="total">
-            <span>Claimed changes</span>
-            <span className="spec">
-              {claimedHp !== 0 ? `+${claimedHp} hp` : ''}
-              {claimedHp !== 0 && claimedKg !== 0 ? ', ' : ''}
-              {claimedKg !== 0 ? `${claimedKg > 0 ? '+' : ''}${claimedKg} kg` : ''}
-            </span>
-          </div>
-        )}
+        <Stats car={car} parts={upgrades} />
         {partsTotal > 0 && (
           <p className="note">
             {wheelSet !== null ? `Four ${wheel.brand} ${wheel.model} wheels` : 'Factory wheels'}
             {upgrades.length > 0 ? ` and ${upgrades.length} other part${upgrades.length === 1 ? '' : 's'}` : ''}.
-            Prices and claimed gains are rough estimates that have not been checked against a seller yet.
+            Prices, factory figures and claimed gains are rough estimates that have not been checked yet.
           </p>
         )}
         <button type="button" className="reset" onClick={s.resetBuild}>
@@ -286,9 +276,10 @@ function UpgradeLine({
   const chosenId = s.upgrades[category.id];
   const chosen = parts.find((p) => p.id === chosenId) ?? null;
 
-  const claims = (p: { claims?: { hp?: number; kg?: number } }) => {
+  const claims = (p: { claims?: { hp?: number; nm?: number; kg?: number } }) => {
     const bits: string[] = [];
     if (p.claims?.hp) bits.push(`+${p.claims.hp} hp`);
+    if (p.claims?.nm) bits.push(`+${p.claims.nm} Nm`);
     if (p.claims?.kg) bits.push(`${p.claims.kg > 0 ? '+' : ''}${p.claims.kg} kg`);
     return bits.join(', ');
   };
@@ -329,7 +320,7 @@ function UpgradeLine({
           </button>
         ))}
       </div>
-      {chosen && FIT_NOTES[chosen.fit] && <p className="note">{FIT_NOTES[chosen.fit]}</p>}
+      {chosen && FIT_NOTES[fitFor(chosen, s.car.id)] && <p className="note">{FIT_NOTES[fitFor(chosen, s.car.id)]}</p>}
       {chosen?.render?.kind === 'exhaust' && chosen.render.system === 'valvetronic' && (
         <label className="check">
           <input
