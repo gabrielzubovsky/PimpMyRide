@@ -37,6 +37,8 @@ export interface WheelProduct {
   finishes: WheelFinish[];
   /** Ids of the car's fitments this wheel is offered in. */
   fitments: string[];
+  /** Ids of the cars this wheel belongs to. Missing means any car. */
+  cars?: string[];
   /** Price per wheel. `null` for parts the car ships with. */
   priceUsdEach: number | null;
   /** False until the price and sizes have been checked against a seller. */
@@ -112,8 +114,21 @@ export interface CarDef {
   make: string;
   model: string;
   years: string;
-  modelUrl: string;
+  /** Path to the car's GLB, or null while no 3D model has been sourced yet.
+   *  A car without a model is drawn as a translucent outline instead. */
+  modelUrl: string | null;
   credit: string;
+  /** Overall size in metres. Drives the outline body and the camera framing. */
+  sizeM: {
+    length: number;
+    width: number;
+    height: number;
+    wheelbase: number;
+    trackFront: number;
+    trackRear: number;
+  };
+  /** Id of the wheel the car ships with (see data/wheels.ts). */
+  factoryWheelId: string;
   boltCount: number;
   pcdMm: number;
   /** Offset of the factory wheels. Used to work out where the hubs are. */
@@ -125,11 +140,14 @@ export interface CarDef {
   leatherColors: Array<{ id: string; name: string; hex: string }>;
   /** Limits for the ride height sliders, relative to stock. */
   rideHeightMm: { min: number; max: number; step: number };
-  /** Names of the meshes and attachment points inside the model file. */
-  nodes: {
+  /** Names of the meshes and attachment points inside the model file.
+   *  Only present when the car has a model. */
+  nodes?: {
     paint: string[];
     glass: string[];
     leather: string[];
+    /** The factory steering wheel mesh, hidden when an aftermarket one is fitted. */
+    steering?: string;
     mounts: Record<Corner, string>;
   };
   lift: {

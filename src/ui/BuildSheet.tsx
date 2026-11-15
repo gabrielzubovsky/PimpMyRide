@@ -1,18 +1,29 @@
 import { useState, type ReactNode } from 'react';
+import { CARS } from '../data/cars';
+import { CATEGORIES, FIT_NOTES, partsIn, type PartCategory, type PartCategoryId } from '../data/catalog';
 import { PAINT_FINISHES } from '../data/paint';
 import type { AxleFitment, ViewId } from '../data/types';
-import { WHEELS } from '../data/wheels';
+import { WHEELS, wheelOffersFitment } from '../data/wheels';
 import type { WheelDesign } from '../parts/wheel';
-import { useGarage, useSelection } from '../state/garage';
+import { useGarage, useSelection, useUpgrades } from '../state/garage';
 import { formatRide, formatTint, formatTyre, formatUsd, formatWheel } from './format';
 
 // The build sheet is both the summary of the build and the way to change it.
 // Each line shows the current choice; opening a line reveals its options.
 
-type LineId = 'paint' | 'wheels' | 'size' | 'ride' | 'calipers' | 'glass' | 'leather';
+type LineId = 'car' | 'paint' | 'wheels' | 'size' | 'ride' | 'calipers' | 'glass' | 'leather' | PartCategoryId;
 
 /** Lines that are best judged from a particular camera view. */
-const LINE_VIEW: Partial<Record<LineId, ViewId>> = { leather: 'interior' };
+const LINE_VIEW: Partial<Record<LineId, ViewId>> = {
+  leather: 'interior',
+  suspension: 'underside',
+  seats: 'interior',
+  harness: 'interior',
+  steering: 'interior',
+  'roll-cage': 'interior',
+  gauges: 'interior',
+  audio: 'interior',
+};
 
 export function BuildSheet() {
   const [open, setOpen] = useState<LineId | null>('paint');
@@ -35,6 +46,10 @@ export function BuildSheet() {
   const caliper = car.caliperColors.find((c) => c.id === s.caliperColorId);
   const leather = car.leatherColors.find((c) => c.id === s.leatherId);
   const wheelSet = wheel.priceUsdEach === null ? null : wheel.priceUsdEach * 4;
+  const upgrades = useUpgrades();
+  const partsTotal = (wheelSet ?? 0) + upgrades.reduce((sum, p) => sum + p.priceUsd, 0);
+  const claimedHp = upgrades.reduce((sum, p) => sum + (p.claims?.hp ?? 0), 0);
+  const claimedKg = upgrades.reduce((sum, p) => sum + (p.claims?.kg ?? 0), 0);
 
   return (
     <aside className="sheet" aria-label="Build sheet">
@@ -46,6 +61,36 @@ export function BuildSheet() {
       </header>
 
       <div className="lines">
+        <Line {...line('car')} label="Car" value={`${car.make} ${car.model}`}>
+          <div className="options" role="group" aria-label="Car">
+            {CARS.map((c) => (
+              <button
+                key={c.id}
+                type="button"
+                className="option"
+                aria-pressed={c.id === car.id}
+                onClick={() => s.setCar(c.id)}
+              >
+                <span className="option-text">
+                  <span className="option-name">
+                    {c.make} {c.model}
+                  </span>
+                  <span className="option-note">
+                    {c.years}
+                    {c.modelUrl === null ? ' — outline only, no 3D model yet' : ''}
+                  </span>
+                </span>
+              </button>
+            ))}
+          </div>
+          {car.modelUrl === null && (
+            <p className="note">
+              No 3D model has been sourced for this car yet, so the body is a translucent outline sized
+              from the real dimensions. Wheels, tyres, brakes, stance and all the parts still work.
+            </p>
+          )}
+        </Line>
+
         <Line {...line('paint')} label="Paint" value={`${paintName}, ${finishName.toLowerCase()}`}>
           <div className="chips" role="group" aria-label="Factory colours">
             {car.paints.map((p) => (
@@ -75,7 +120,7 @@ export function BuildSheet() {
 
         <Line {...line('wheels')} label="Wheels" value={`${wheel.brand} ${wheel.model}`}>
           <div className="options" role="group" aria-label="Wheel">
-            {WHEELS.map((w) => (
+            {WHEELS.filter((w) => !w.cars || w.cars.includes(car.id)).map((w) => (
               <button
                 key={w.id}
                 type="button"
@@ -118,7 +163,7 @@ export function BuildSheet() {
         <Line {...line('size')} label="Wheel and tyre size" value={fitment.name}>
           <div className="options" role="group" aria-label="Size">
             {car.fitments
-              .filter((f) => wheel.fitments.includes(f.id))
+              .filter((f) => wheelOffersFitment(wheel, f.id))
               .map((f) => (
                 <button
                   key={f.id}
@@ -133,7 +178,7 @@ export function BuildSheet() {
                 </button>
               ))}
           </div>
-          {wheel.fitments.length < car.fitments.length && (
+          {car.fitments.some((f) => !wheelOffersFitment(wheel, f.id)) && (
             <p className="note">
               {wheel.brand} {wheel.model} is not listed in every size. Pick another wheel to see more.
             </p>
@@ -190,17 +235,32 @@ export function BuildSheet() {
         <Line {...line('leather')} label="Interior leather" value={leather?.name ?? ''}>
           <Swatches options={car.leatherColors} value={s.leatherId} onChange={s.setLeather} label="Leather colour" />
         </Line>
+
+        {CATEGORIES.map((c) => (
+          <UpgradeLine key={c.id} category={c} {...line(c.id)} />
+        ))}
       </div>
 
       <footer className="sheet-foot">
         <div className="total">
           <span>Parts so far</span>
-          <span className="spec">{wheelSet === null ? 'All factory' : formatUsd(wheelSet)}</span>
+          <span className="spec">{partsTotal === 0 ? 'All factory' : formatUsd(partsTotal)}</span>
         </div>
-        {wheelSet !== null && (
+        {(claimedHp !== 0 || claimedKg !== 0) && (
+          <div className="total">
+            <span>Claimed changes</span>
+            <span className="spec">
+              {claimedHp !== 0 ? `+${claimedHp} hp` : ''}
+              {claimedHp !== 0 && claimedKg !== 0 ? ', ' : ''}
+              {claimedKg !== 0 ? `${claimedKg > 0 ? '+' : ''}${claimedKg} kg` : ''}
+            </span>
+          </div>
+        )}
+        {partsTotal > 0 && (
           <p className="note">
-            Four {wheel.brand} {wheel.model} wheels. Prices are rough estimates that have not been checked
-            against a seller yet.
+            {wheelSet !== null ? `Four ${wheel.brand} ${wheel.model} wheels` : 'Factory wheels'}
+            {upgrades.length > 0 ? ` and ${upgrades.length} other part${upgrades.length === 1 ? '' : 's'}` : ''}.
+            Prices and claimed gains are rough estimates that have not been checked against a seller yet.
           </p>
         )}
         <button type="button" className="reset" onClick={s.resetBuild}>
@@ -208,6 +268,69 @@ export function BuildSheet() {
         </button>
       </footer>
     </aside>
+  );
+}
+
+/** A catalogue category as one line: pick a part, or stay factory. */
+function UpgradeLine({
+  category,
+  ...lineProps
+}: {
+  category: PartCategory;
+  id: LineId;
+  open: boolean;
+  onToggle: () => void;
+}) {
+  const s = useGarage();
+  const parts = partsIn(category.id);
+  const chosenId = s.upgrades[category.id];
+  const chosen = parts.find((p) => p.id === chosenId) ?? null;
+
+  const claims = (p: { claims?: { hp?: number; kg?: number } }) => {
+    const bits: string[] = [];
+    if (p.claims?.hp) bits.push(`+${p.claims.hp} hp`);
+    if (p.claims?.kg) bits.push(`${p.claims.kg > 0 ? '+' : ''}${p.claims.kg} kg`);
+    return bits.join(', ');
+  };
+
+  return (
+    <Line {...lineProps} label={category.name} value={chosen ? `${chosen.brand} ${chosen.model}` : category.stockLabel}>
+      <div className="options" role="group" aria-label={category.name}>
+        <button
+          type="button"
+          className="option"
+          aria-pressed={chosen === null}
+          onClick={() => s.setUpgrade(category.id, null)}
+        >
+          <span className="option-text">
+            <span className="option-name">{category.stockLabel}</span>
+          </span>
+          <span className="option-price">—</span>
+        </button>
+        {parts.map((p) => (
+          <button
+            key={p.id}
+            type="button"
+            className="option"
+            aria-pressed={p.id === chosenId}
+            onClick={() => s.setUpgrade(category.id, p.id)}
+          >
+            <span className="option-text">
+              <span className="option-name">
+                {p.brand} {p.model}
+              </span>
+              <span className="option-note">
+                {p.blurb}
+                {claims(p) ? ` Claimed ${claims(p)}.` : ''}
+                {!p.render ? ' Not drawn in 3D yet.' : ''}
+              </span>
+            </span>
+            <span className="option-price">{formatUsd(p.priceUsd)}</span>
+          </button>
+        ))}
+      </div>
+      {chosen && FIT_NOTES[chosen.fit] && <p className="note">{FIT_NOTES[chosen.fit]}</p>}
+    </Line>
   );
 }
 

@@ -1,3 +1,4 @@
+import { CIVICS } from './civics';
 import type { CarDef } from './types';
 
 // Seed data for the first car. Dimensions marked "approx" are from memory and
@@ -13,6 +14,8 @@ export const FERRARI_458: CarDef = {
   years: '2011 to 2015',
   modelUrl: '/models/ferrari-458-spider.glb',
   credit: 'Ferrari 458 Italia model by vicent091036, via the three.js examples',
+  sizeM: { length: 4.53, width: 1.94, height: 1.21, wheelbase: 2.65, trackFront: 1.67, trackRear: 1.61 },
+  factoryWheelId: 'ferrari-oem-20',
 
   boltCount: 5,
   pcdMm: 114.3,
@@ -83,6 +86,7 @@ export const FERRARI_458: CarDef = {
     paint: ['body_paint'],
     glass: ['glass'],
     leather: ['interior_leather', 'steering_leather'],
+    steering: 'steering_leather',
     mounts: {
       fl: 'mount_wheel_fl',
       fr: 'mount_wheel_fr',
@@ -147,4 +151,4 @@ export const FERRARI_458: CarDef = {
   ],
 };
 
-export const CARS: CarDef[] = [FERRARI_458];
+export const CARS: CarDef[] = [FERRARI_458, ...CIVICS];
