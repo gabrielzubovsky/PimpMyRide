@@ -180,6 +180,30 @@ function ModelCar() {
     leather.color.set(car.leatherColors.find((c) => c.id === leatherId)?.hex ?? '#131313');
   }, [leather, car, leatherId]);
 
+  // In the engine view, clip away the body above and behind the bay limits,
+  // as if the rear deck were lifted off the car.
+  const view = useGarage((s) => s.view);
+  useLayoutEffect(() => {
+    const bay = car.engineBay;
+    if (!bay) return;
+    const planes =
+      view === 'engine'
+        ? [
+            new THREE.Plane(new THREE.Vector3(0, -1, 0), bay.clipY),
+            new THREE.Plane(new THREE.Vector3(0, 0, -1), bay.clipZ),
+          ]
+        : null;
+    scene.traverse((obj) => {
+      if (!(obj instanceof THREE.Mesh)) return;
+      const materials = Array.isArray(obj.material) ? obj.material : [obj.material];
+      for (const material of materials) {
+        material.clippingPlanes = planes;
+        material.clipIntersection = planes !== null;
+        material.needsUpdate = true;
+      }
+    });
+  }, [scene, car, view]);
+
   // Swap out the factory steering wheel when an aftermarket one is fitted.
   const aftermarketWheel = useRender('steering', 'steering');
   useLayoutEffect(() => {

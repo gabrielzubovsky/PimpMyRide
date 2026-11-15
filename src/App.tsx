@@ -33,7 +33,7 @@ export function App() {
         <Canvas
           dpr={[1, 2]}
           camera={{ position: car.views[0].position, fov: car.views[0].fov, near: 0.03, far: 80 }}
-          gl={{ antialias: true }}
+          gl={{ antialias: true, localClippingEnabled: true }}
         >
           <Garage />
           <Suspense fallback={null}>

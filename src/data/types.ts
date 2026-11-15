@@ -150,6 +150,16 @@ export interface CarDef {
     steering?: string;
     mounts: Record<Corner, string>;
   };
+  /**
+   * A procedural engine bay. `center` is where the engine sits in model space.
+   * In the engine view, everything above `clipY` and beyond `clipZ` is clipped
+   * away, as if the cover were lifted off.
+   */
+  engineBay?: {
+    center: [number, number, number];
+    clipY: number;
+    clipZ: number;
+  };
   lift: {
     /** How far the lift raises the car. */
     heightM: number;

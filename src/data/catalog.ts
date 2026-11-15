@@ -79,6 +79,8 @@ export type PartRender =
   | { kind: 'wing'; spanMm: number; chordMm: number; heightMm: number; mount: 'swan' | 'post' }
   | {
       kind: 'exhaust';
+      /** What part of the system is replaced, and whether it has valves. */
+      system: 'cat-back' | 'axle-back' | 'turbo-back' | 'valvetronic' | 'straight-pipe';
       layout: 'quad' | 'dual' | 'single' | 'center-triple';
       tipDiameterMm: number;
       finish: 'titanium' | 'steel' | 'black' | 'burnt';
@@ -355,7 +357,7 @@ export const CATALOG: PartProduct[] = [
     priceUsd: 9000,
     fit: 'this-car',
     claims: { hp: 12, kg: -14 },
-    render: { kind: 'exhaust', layout: 'quad', tipDiameterMm: 110, finish: 'titanium' },
+    render: { kind: 'exhaust', system: 'cat-back', layout: 'quad', tipDiameterMm: 110, finish: 'titanium' },
     verified: false,
   },
   {
@@ -367,7 +369,7 @@ export const CATALOG: PartProduct[] = [
     priceUsd: 5400,
     fit: 'this-car',
     claims: { hp: 9 },
-    render: { kind: 'exhaust', layout: 'quad', tipDiameterMm: 114, finish: 'steel' },
+    render: { kind: 'exhaust', system: 'valvetronic', layout: 'quad', tipDiameterMm: 114, finish: 'steel' },
     verified: false,
   },
   {
@@ -379,7 +381,7 @@ export const CATALOG: PartProduct[] = [
     priceUsd: 4900,
     fit: 'this-car',
     claims: { hp: 8 },
-    render: { kind: 'exhaust', layout: 'quad', tipDiameterMm: 102, finish: 'black' },
+    render: { kind: 'exhaust', system: 'valvetronic', layout: 'quad', tipDiameterMm: 102, finish: 'black' },
     verified: false,
   },
   {
@@ -391,7 +393,7 @@ export const CATALOG: PartProduct[] = [
     priceUsd: 1500,
     fit: 'needs-adapting',
     claims: { hp: 6 },
-    render: { kind: 'exhaust', layout: 'dual', tipDiameterMm: 102, finish: 'steel' },
+    render: { kind: 'exhaust', system: 'axle-back', layout: 'dual', tipDiameterMm: 102, finish: 'steel' },
     verified: false,
   },
   {
@@ -403,7 +405,44 @@ export const CATALOG: PartProduct[] = [
     priceUsd: 950,
     fit: 'needs-adapting',
     claims: { hp: 7, kg: -12 },
-    render: { kind: 'exhaust', layout: 'single', tipDiameterMm: 110, finish: 'burnt' },
+    render: { kind: 'exhaust', system: 'cat-back', layout: 'single', tipDiameterMm: 110, finish: 'burnt' },
+    verified: false,
+  },
+
+  {
+    id: 'magnaflow-competition',
+    category: 'exhaust',
+    brand: 'MagnaFlow',
+    model: 'Competition axle-back',
+    blurb: 'Stainless axle-back, deep tone, keeps the mid-pipe.',
+    priceUsd: 900,
+    fit: 'needs-adapting',
+    claims: { hp: 4 },
+    render: { kind: 'exhaust', system: 'axle-back', layout: 'dual', tipDiameterMm: 114, finish: 'steel' },
+    verified: false,
+  },
+  {
+    id: 'hks-hipower',
+    category: 'exhaust',
+    brand: 'HKS',
+    model: 'Hi-Power cat-back',
+    blurb: 'The classic JDM single-canister cat-back.',
+    priceUsd: 800,
+    fit: 'needs-adapting',
+    claims: { hp: 6 },
+    render: { kind: 'exhaust', system: 'cat-back', layout: 'single', tipDiameterMm: 124, finish: 'burnt' },
+    verified: false,
+  },
+  {
+    id: 'vibrant-straight-pipe',
+    category: 'exhaust',
+    brand: 'Vibrant Performance',
+    model: 'Straight-pipe kit',
+    blurb: 'Muffler and resonator delete. Very, very loud.',
+    priceUsd: 350,
+    fit: 'universal',
+    claims: { hp: 5 },
+    render: { kind: 'exhaust', system: 'straight-pipe', layout: 'single', tipDiameterMm: 102, finish: 'steel' },
     verified: false,
   },
 

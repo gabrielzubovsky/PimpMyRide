@@ -107,12 +107,14 @@ const TIP_LAYOUT: Record<string, number[]> = {
 
 export function ExhaustMod({ car }: { car: CarDef }) {
   const spec = useRender('exhaust', 'exhaust');
+  const valvesOpen = useGarage((s) => s.exhaustValves);
   if (!spec) return null;
 
   const r = (spec.tipDiameterMm / 2) * MM;
   const y = car.sizeM.height * 0.2;
   const z = car.sizeM.length / 2 - 0.04;
   const finish = TIP_FINISH[spec.finish];
+  const valved = spec.system === 'valvetronic';
 
   return (
     <group name="mod-exhaust">
@@ -127,7 +129,88 @@ export function ExhaustMod({ car }: { car: CarDef }) {
             <cylinderGeometry args={[r * 0.82, r * 0.82, 0.18, 20]} />
             <meshStandardMaterial color="#060606" roughness={1} />
           </mesh>
+          {/* Valve flap: edge-on when open, blocking the pipe when shut. */}
+          {valved && (
+            <mesh position={[0, 0.055, 0]} rotation={[valvesOpen ? Math.PI / 2 - 0.12 : 0.1, 0, 0]}>
+              <circleGeometry args={[r * 0.8, 20]} />
+              <meshStandardMaterial color="#3a3d41" roughness={0.5} metalness={0.9} side={THREE.DoubleSide} />
+            </mesh>
+          )}
         </group>
+      ))}
+    </group>
+  );
+}
+
+// --- Engine bay --------------------------------------------------------------
+
+const CRINKLE_RED = { color: '#a01016', roughness: 0.62, metalness: 0.25 };
+const ALLOY = { color: '#9aa0a5', roughness: 0.38, metalness: 0.9 };
+const BAY_DARK = { color: '#141518', roughness: 0.8, metalness: 0.1 };
+
+/**
+ * Stylised mid-engine V8 bay, laid out like the 458's F136: red crinkle intake
+ * plenums over the vee, alloy block and cam covers, carbon airboxes at the
+ * corners and a brace across the bay. A stand-in, not the real panelling.
+ */
+export function EngineBayMod({ car }: { car: CarDef }) {
+  if (!car.engineBay) return null;
+  const [cx, cy, cz] = car.engineBay.center;
+
+  return (
+    <group name="mod-engine-bay" position={[cx, cy, cz]}>
+      {/* Bay tub */}
+      <mesh position={[0, -0.16, 0]}>
+        <boxGeometry args={[1.3, 0.05, 0.95]} />
+        <meshStandardMaterial {...BAY_DARK} />
+      </mesh>
+      {([-1, 1] as const).map((side) => (
+        <mesh key={side} position={[side * 0.64, 0.02, 0]}>
+          <boxGeometry args={[0.05, 0.34, 0.95]} />
+          <meshStandardMaterial {...BAY_DARK} />
+        </mesh>
+      ))}
+      <mesh position={[0, 0.02, -0.46]}>
+        <boxGeometry args={[1.3, 0.34, 0.05]} />
+        <meshStandardMaterial {...BAY_DARK} />
+      </mesh>
+      {/* Block and heads */}
+      <mesh position={[0, -0.02, 0]}>
+        <boxGeometry args={[0.6, 0.24, 0.5]} />
+        <meshStandardMaterial color="#5c6066" roughness={0.45} metalness={0.85} />
+      </mesh>
+      {/* Cam covers on the 90-degree vee */}
+      {([-1, 1] as const).map((side) => (
+        <mesh key={side} position={[side * 0.21, 0.13, 0]} rotation={[0, 0, side * -0.55]}>
+          <boxGeometry args={[0.3, 0.05, 0.48]} />
+          <meshStandardMaterial {...CRINKLE_RED} />
+        </mesh>
+      ))}
+      {/* Intake plenums over each bank */}
+      {([-1, 1] as const).map((side) => (
+        <mesh key={side} position={[side * 0.17, 0.23, 0]} rotation={[Math.PI / 2, 0, 0]}>
+          <cylinderGeometry args={[0.085, 0.085, 0.52, 18]} />
+          <meshStandardMaterial {...CRINKLE_RED} />
+        </mesh>
+      ))}
+      {/* Centre manifold between the plenums */}
+      <mesh position={[0, 0.2, 0]}>
+        <boxGeometry args={[0.16, 0.1, 0.44]} />
+        <meshStandardMaterial {...ALLOY} />
+      </mesh>
+      {/* Carbon airboxes feeding each bank */}
+      {([-1, 1] as const).map((side) => (
+        <mesh key={side} position={[side * 0.47, 0.16, 0.3]} rotation={[0, side * 0.3, 0]}>
+          <boxGeometry args={[0.26, 0.14, 0.22]} />
+          <meshStandardMaterial {...CARBON} />
+        </mesh>
+      ))}
+      {/* Brace across the bay */}
+      {([-1, 1] as const).map((side) => (
+        <mesh key={side} position={[side * 0.3, 0.3, -0.18]} rotation={[0, 0, side * 1.1]}>
+          <cylinderGeometry args={[0.014, 0.014, 0.62, 10]} />
+          <meshStandardMaterial {...ALLOY} />
+        </mesh>
       ))}
     </group>
   );
@@ -576,6 +659,7 @@ export function BodyMods({ car, mounts }: { car: CarDef; mounts: { front: AxleMo
       <BodyKitMod car={car} mounts={mounts} />
       <HoodMod car={car} />
       <DiffuserMod car={car} />
+      <EngineBayMod car={car} />
     </>
   );
 }

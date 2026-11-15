@@ -26,6 +26,8 @@ export interface Build {
   leatherId: string;
   /** Chosen catalogue part per category, or null for factory / none. */
   upgrades: Record<PartCategoryId, string | null>;
+  /** Valves open on a valvetronic exhaust. */
+  exhaustValves: boolean;
 }
 
 interface GarageState extends Build {
@@ -44,6 +46,7 @@ interface GarageState extends Build {
   setTint: (tint: number) => void;
   setLeather: (id: string) => void;
   setUpgrade: (category: PartCategoryId, partId: string | null) => void;
+  setExhaustValves: (open: boolean) => void;
   setCar: (carId: string) => void;
   resetBuild: () => void;
 }
@@ -65,6 +68,7 @@ function stockBuild(car: CarDef): Build {
     tint: 0.35,
     leatherId: car.leatherColors[0].id,
     upgrades: Object.fromEntries(CATEGORIES.map((c) => [c.id, null])) as Record<PartCategoryId, string | null>,
+    exhaustValves: true,
   };
 }
 
@@ -111,6 +115,7 @@ export const useGarage = create<GarageState>((set, get) => ({
   setLeather: (leatherId) => set({ leatherId }),
   setUpgrade: (category, partId) =>
     set((s) => ({ upgrades: { ...s.upgrades, [category]: partId } })),
+  setExhaustValves: (exhaustValves) => set({ exhaustValves }),
   // Switching car starts a fresh build: paints, sizes and parts are per-car.
   setCar: (carId) => {
     const next = CARS.find((c) => c.id === carId);

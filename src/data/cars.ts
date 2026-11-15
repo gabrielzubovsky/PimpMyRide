@@ -1,4 +1,5 @@
 import { CIVICS } from './civics';
+import { MORE_CARS } from './more-cars';
 import type { CarDef } from './types';
 
 // Seed data for the first car. Dimensions marked "approx" are from memory and
@@ -95,6 +96,10 @@ export const FERRARI_458: CarDef = {
     },
   },
 
+  // The F136 V8 sits behind the cabin. In the engine view the rear deck is
+  // clipped away above and behind these limits so the bay shows.
+  engineBay: { center: [0, 0.5, 1.32], clipY: 0.78, clipZ: 0.98 },
+
   lift: { heightM: 1.45, contactM: 0.15, runnerX: 0.66, runnerZ: 0.2, runnerLength: 1.5 },
 
   views: [
@@ -120,7 +125,7 @@ export const FERRARI_458: CarDef = {
       maxDistance: 4,
       minPolar: 5,
       maxPolar: 80,
-      note: 'The engine sits under this cover. This model has nothing built beneath it yet.',
+      note: 'Rear deck lifted away. The bay is a stylised stand-in, not the real panelling.',
     },
     {
       id: 'interior',
@@ -151,4 +156,135 @@ export const FERRARI_458: CarDef = {
   ],
 };
 
-export const CARS: CarDef[] = [FERRARI_458, ...CIVICS];
+export const PORSCHE_992: CarDef = {
+  id: 'porsche-992',
+  make: 'Porsche',
+  model: '911 Carrera 4S (992)',
+  years: '2019 on',
+  modelUrl: '/models/porsche-911-carrera-4s.glb',
+  credit:
+    '"(FREE) Porsche 911 Carrera 4S" by Karol Miklas, CC-BY-SA-4.0, via the HoanghoDev/3dmodel mirror. Exterior-only model.',
+  sizeM: { length: 4.52, width: 1.85, height: 1.3, wheelbase: 2.45, trackFront: 1.59, trackRear: 1.56 },
+  factoryWheelId: 'oem-alloy',
+
+  boltCount: 5,
+  pcdMm: 130,
+  stockOffsetMm: { front: 53, rear: 67 }, // approx
+
+  brakes: {
+    front: { discDiameterMm: 350, discThicknessMm: 34, pistons: 6, caliperSide: 'behind' },
+    rear: { discDiameterMm: 350, discThicknessMm: 28, pistons: 4, caliperSide: 'ahead' },
+  },
+
+  fitments: [
+    {
+      id: 'stock',
+      name: 'Stock staggered',
+      note: 'The factory Carrera S setup: 20s front, 21s rear.',
+      front: { diameterIn: 20, widthIn: 8.5, offsetMm: 53, tyre: { widthMm: 245, aspect: 35 } },
+      rear: { diameterIn: 21, widthIn: 11.5, offsetMm: 67, tyre: { widthMm: 305, aspect: 30 } },
+    },
+    {
+      id: 'square-20',
+      name: 'Square 20s',
+      note: 'Track-day square setup on wider fronts.',
+      front: { diameterIn: 20, widthIn: 9.5, offsetMm: 46, tyre: { widthMm: 265, aspect: 35 } },
+      rear: { diameterIn: 20, widthIn: 11, offsetMm: 60, tyre: { widthMm: 295, aspect: 30 } },
+    },
+  ],
+
+  paints: [
+    { id: 'guards-red', name: 'Guards Red', hex: '#c01118', finish: 'gloss' },
+    { id: 'carrara-white', name: 'Carrara White Metallic', hex: '#e8e8e2', finish: 'metallic' },
+    { id: 'gt-silver', name: 'GT Silver Metallic', hex: '#9fa3a7', finish: 'metallic' },
+    { id: 'gentian-blue', name: 'Gentian Blue Metallic', hex: '#17295c', finish: 'metallic' },
+    { id: 'racing-yellow', name: 'Racing Yellow', hex: '#e8c21a', finish: 'gloss' },
+    { id: 'agate-grey', name: 'Agate Grey Metallic', hex: '#55585c', finish: 'metallic' },
+    { id: 'jet-black', name: 'Jet Black Metallic', hex: '#0c0c0e', finish: 'metallic' },
+  ],
+
+  caliperColors: [
+    { id: 'red', name: 'Red', hex: '#c20d12' },
+    { id: 'black', name: 'Black', hex: '#111214' },
+    { id: 'yellow', name: 'Yellow (ceramic)', hex: '#f0c400' },
+    { id: 'white', name: 'White', hex: '#e8e8e4' },
+    { id: 'silver', name: 'Silver', hex: '#a9adb1' },
+  ],
+
+  // The source model has no interior meshes, so these only drive the swatches.
+  leatherColors: [
+    { id: 'black', name: 'Black', hex: '#131313' },
+    { id: 'bordeaux', name: 'Bordeaux Red', hex: '#5c1620' },
+    { id: 'mojave-beige', name: 'Mojave Beige', hex: '#b4a284' },
+  ],
+
+  rideHeightMm: { min: -50, max: 20, step: 5 },
+
+  nodes: {
+    paint: ['Plane.002_0', 'Plane.003_0', 'Plane.004_0', 'boot.001_0', 'boot.002_0', 'boot.005_0', 'boot.008_0'],
+    glass: ['window_rear_0', 'windshield_0', 'boot.004_0'],
+    leather: [],
+    mounts: {
+      fl: 'mount_wheel_fl',
+      fr: 'mount_wheel_fr',
+      rl: 'mount_wheel_rl',
+      rr: 'mount_wheel_rr',
+    },
+  },
+
+  lift: { heightM: 1.45, contactM: 0.12, runnerX: 0.62, runnerZ: 0, runnerLength: 1.4 },
+
+  views: [
+    {
+      id: 'exterior',
+      name: 'Exterior',
+      position: [-4.5, 1.5, -5.5],
+      target: [0, 0.55, 0],
+      fov: 34,
+      minDistance: 3,
+      maxDistance: 10,
+      minPolar: 15,
+      maxPolar: 88,
+    },
+    {
+      // Rear-engined: the flat-six sits behind the rear axle.
+      id: 'engine',
+      name: 'Engine bay',
+      position: [1.0, 1.9, 3.4],
+      target: [0, 0.75, 1.5],
+      fov: 38,
+      minDistance: 1.2,
+      maxDistance: 4,
+      minPolar: 5,
+      maxPolar: 80,
+      note: 'The flat-six sits under the rear decklid. Nothing is modelled in there yet.',
+    },
+    {
+      id: 'interior',
+      name: 'Interior',
+      position: [-0.37, 0.95, 0.2],
+      target: [-0.16, 0.8, -0.65],
+      fov: 72,
+      minDistance: 0.05,
+      maxDistance: 0.05,
+      minPolar: 35,
+      maxPolar: 140,
+      lookAround: true,
+      note: 'The source model is exterior-only, so the cabin is a bare shell.',
+    },
+    {
+      id: 'underside',
+      name: 'Underside',
+      position: [2.2, 0.75, 3.1],
+      target: [0, 1.5, 0],
+      fov: 50,
+      minDistance: 0.9,
+      maxDistance: 4.6,
+      minPolar: 92,
+      maxPolar: 175,
+      lift: true,
+    },
+  ],
+};
+
+export const CARS: CarDef[] = [FERRARI_458, PORSCHE_992, ...CIVICS, ...MORE_CARS];

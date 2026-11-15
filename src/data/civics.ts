@@ -7,7 +7,7 @@ import type { AxleFitment, BrakeFitment, CameraView, CarDef, Fitment, PaintColor
 // checking against a fitment guide before they are trusted.
 
 /** Shorthand for one axle of a fitment. */
-const ax = (diameterIn: number, widthIn: number, offsetMm: number, tyreWidthMm: number, aspect: number): AxleFitment => ({
+export const ax = (diameterIn: number, widthIn: number, offsetMm: number, tyreWidthMm: number, aspect: number): AxleFitment => ({
   diameterIn,
   widthIn,
   offsetMm,
@@ -15,7 +15,7 @@ const ax = (diameterIn: number, widthIn: number, offsetMm: number, tyreWidthMm: 
 });
 
 /** Square setup: same wheel and tyre on both axles. */
-const square = (id: string, name: string, note: string, a: AxleFitment): Fitment => ({
+export const square = (id: string, name: string, note: string, a: AxleFitment): Fitment => ({
   id,
   name,
   note,
@@ -23,14 +23,14 @@ const square = (id: string, name: string, note: string, a: AxleFitment): Fitment
   rear: a,
 });
 
-const brake = (discDiameterMm: number, discThicknessMm: number, pistons: number, caliperSide: BrakeFitment['caliperSide']): BrakeFitment => ({
+export const brake = (discDiameterMm: number, discThicknessMm: number, pistons: number, caliperSide: BrakeFitment['caliperSide']): BrakeFitment => ({
   discDiameterMm,
   discThicknessMm,
   pistons,
   caliperSide,
 });
 
-const CALIPERS = [
+export const CALIPERS = [
   { id: 'silver', name: 'Silver', hex: '#a9adb1' },
   { id: 'black', name: 'Black', hex: '#111214' },
   { id: 'red', name: 'Red', hex: '#c20d12' },
@@ -38,7 +38,7 @@ const CALIPERS = [
   { id: 'teal', name: 'Teal', hex: '#1f8f85' },
 ];
 
-const INTERIORS = [
+export const INTERIORS = [
   { id: 'black', name: 'Black', hex: '#141414' },
   { id: 'gray', name: 'Gray', hex: '#585a5c' },
   { id: 'beige', name: 'Beige', hex: '#b4a284' },
@@ -46,7 +46,7 @@ const INTERIORS = [
 ];
 
 /** Camera presets sized from the car's dimensions. Front of the car is -z. */
-function viewsFor(size: CarDef['sizeM']): CameraView[] {
+export function viewsFor(size: CarDef['sizeM']): CameraView[] {
   const f = size.length / 4.5;
   const headY = size.height * 0.72;
   return [
@@ -154,7 +154,7 @@ function civic(g: CivicGen): CarDef {
   };
 }
 
-const paint = (id: string, name: string, hex: string, finish: PaintColor['finish'] = 'gloss'): PaintColor => ({ id, name, hex, finish });
+export const paint = (id: string, name: string, hex: string, finish: PaintColor['finish'] = 'gloss'): PaintColor => ({ id, name, hex, finish });
 
 export const CIVICS: CarDef[] = [
   civic({

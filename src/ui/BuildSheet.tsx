@@ -330,6 +330,16 @@ function UpgradeLine({
         ))}
       </div>
       {chosen && FIT_NOTES[chosen.fit] && <p className="note">{FIT_NOTES[chosen.fit]}</p>}
+      {chosen?.render?.kind === 'exhaust' && chosen.render.system === 'valvetronic' && (
+        <label className="check">
+          <input
+            type="checkbox"
+            checked={s.exhaustValves}
+            onChange={(e) => s.setExhaustValves(e.target.checked)}
+          />
+          <span>Valves open</span>
+        </label>
+      )}
     </Line>
   );
 }

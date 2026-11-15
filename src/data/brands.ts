@@ -96,6 +96,7 @@ export const BRANDS: Brand[] = [
   { id: 'magnaflow', name: 'MagnaFlow', country: 'USA', fields: ['exhaust'] },
   { id: 'remus', name: 'Remus', country: 'Austria', fields: ['exhaust'] },
   { id: 'tomei', name: 'Tomei', country: 'Japan', fields: ['exhaust', 'engine-management'], note: 'Expreme Ti single-exit; engine internals.' },
+  { id: 'vibrant', name: 'Vibrant Performance', country: 'Canada', fields: ['exhaust'], note: 'Piping, resonators and fabrication parts.' },
   { id: 'greddy', name: 'GReddy (Trust)', country: 'Japan', fields: ['exhaust', 'forced-induction', 'cooling'], note: 'Turbo kits, intercoolers, exhausts.' },
 
   // Intake

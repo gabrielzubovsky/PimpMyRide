@@ -39,3 +39,11 @@ Ferrari, BBS, RAYS / Volk Racing, Yokohama / Advan and HRE are trademarks of the
 ## Parts data accuracy
 
 The parts data in `src/data/` is seed data written from memory, not researched from sellers. Wheel prices, the sizes each wheel is sold in, the factory wheel offsets and the paint swatch colours are approximate. Catalogue entries carry `verified: false` until checked. The wheel designs are stylised versions of the real wheels, not measured copies.
+
+## Porsche 911 Carrera 4S model
+
+- Title: "(FREE) Porsche 911 Carrera 4S", by Karol Miklas. Licence: CC-BY-SA-4.0 (embedded in the file's asset metadata).
+- Original listing: https://sketchfab.com/3d-models/free-porsche-911-carrera-4s-d01b254483794de3819786d93e0e1ebf
+- File downloaded from the HoanghoDev/3dmodel GitHub mirror: https://raw.githubusercontent.com/HoanghoDev/3dmodel/main/model/free_porsche_911_carrera_4s.glb
+- Modified by `scripts/prepare-porsche.mjs`: reoriented, baked wheels/brakes and ground shadow removed, mount nodes added, re-compressed with Meshopt.
+- Share-alike note: the processed model is a derivative and stays CC-BY-SA-4.0 if redistributed.
