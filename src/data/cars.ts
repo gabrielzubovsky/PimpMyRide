@@ -14,7 +14,15 @@ export const FERRARI_458: CarDef = {
   model: '458 Spider',
   years: '2011 to 2015',
   modelUrl: '/models/ferrari-458-spider.glb',
-  credit: 'Ferrari 458 Italia model by vicent091036, via the three.js examples',
+  modelCredit: {
+    title: 'Ferrari 458 Italia',
+    author: 'vicent091036',
+    // The original listing is disabled; the file comes from the three.js examples.
+    url: 'https://sketchfab.com/models/57bf6cc56931426e87494f554df1dab6',
+    licence: 'licence unconfirmed',
+    changes: 'File from the three.js examples repository; wheels replaced with mount points, meshes renamed, recompressed.',
+    unconfirmed: 'The Sketchfab listing is disabled, so its licence could not be checked.',
+  },
   sizeM: { length: 4.53, width: 1.94, height: 1.21, wheelbase: 2.65, trackFront: 1.67, trackRear: 1.61 },
   factoryWheelId: 'ferrari-oem-20',
 
@@ -178,8 +186,16 @@ export const PORSCHE_992: CarDef = {
   model: '911 Carrera 4S (992)',
   years: '2019 on',
   modelUrl: '/models/porsche-911-carrera-4s.glb',
-  credit:
-    '"(FREE) Porsche 911 Carrera 4S" by Karol Miklas, CC-BY-SA-4.0, via the HoanghoDev/3dmodel mirror. Exterior-only model.',
+  modelCredit: {
+    title: '(FREE) Porsche 911 Carrera 4S',
+    // The file's metadata names Karol Miklas; Sketchfab lists the model under Lionsharp Studios.
+    author: 'Karol Miklas (Lionsharp Studios)',
+    authorUrl: 'https://sketchfab.com/lionsharp',
+    url: 'https://sketchfab.com/3d-models/free-porsche-911-carrera-4s-d01b254483794de3819786d93e0e1ebf',
+    licence: 'CC BY-SA 4.0',
+    licenceUrl: 'https://creativecommons.org/licenses/by-sa/4.0/',
+    changes: 'Turned to face forward, baked wheels, brakes and shadow removed, mount points added, recompressed. Exterior-only model.',
+  },
   sizeM: { length: 4.52, width: 1.85, height: 1.3, wheelbase: 2.45, trackFront: 1.59, trackRear: 1.56 },
   factoryWheelId: 'oem-alloy',
 

@@ -7,6 +7,7 @@ import { Garage } from './scene/Garage';
 import { useGarage } from './state/garage';
 import { BuildSheet } from './ui/BuildSheet';
 import { ViewSwitcher } from './ui/ViewSwitcher';
+import { ModelCredit } from './ui/ModelCredit';
 
 export function App() {
   const car = useGarage((s) => s.car);
@@ -48,6 +49,11 @@ export function App() {
           <p className="masthead-car">
             {car.make} {car.model}
           </p>
+          {car.modelCredit && (
+            <p className="masthead-credit">
+              <ModelCredit credit={car.modelCredit} />
+            </p>
+          )}
         </header>
 
         <LoadingNote />

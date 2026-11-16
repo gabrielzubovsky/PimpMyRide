@@ -148,7 +148,6 @@ function civic(g: CivicGen): CarDef {
     model: `Civic (${g.chassis})`,
     years: g.years,
     modelUrl: null,
-    credit: `${g.bodyStyle}. No 3D model sourced yet; shown as an outline.`,
     sizeM: size,
     factoryWheelId: g.steelWheels ? 'honda-steel' : 'honda-alloy',
     boltCount: g.boltCount,
