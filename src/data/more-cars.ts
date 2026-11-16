@@ -1,17 +1,27 @@
 import { ax, brake, CALIPERS, INTERIORS, paint, square, viewsFor } from './civics';
-import type { AxleFitment, BrakeFitment, CarDef, EngineSpec, Fitment, PaintColor } from './types';
+import type { AxleFitment, BrakeFitment, CarDef, EngineSpec, Fitment, ModelCredit, PaintColor } from './types';
 
 // Ten more cars, one per marque, picked from a survey of downloadable
 // Sketchfab models (see docs/sketchfab-cars.md). Every pick is CC Attribution,
 // so it only needs crediting. scripts/fetch-sketchfab.mjs downloads them (free
 // Sketchfab API token needed) and scripts/prepare-sketchfab.mjs prepares them;
 // until a car's model is prepared, `prepared` stays unset and it draws as an
-// outline. Each credit carries the model's link. All dimensions, offsets and brake figures are
+// outline. Each car's `source` credits its model (shown in the app). All dimensions, offsets and brake figures are
 // approximate, from general knowledge, and need checking against a workshop
 // manual or fitment guide before they are trusted — same spirit as the
 // verified: false flags in the wheel catalogue.
 
 /** Staggered setup: different wheel or tyre front and rear. */
+/** What prepare-sketchfab.mjs changes, for the attribution. */
+const CHANGES =
+  "Scaled to the real car's size, turned to face forward, baked wheels, tyres and brakes removed, paint, glass and trim materials replaced, recompressed.";
+
+const CC_BY = { licence: 'CC BY 4.0', licenceUrl: 'https://creativecommons.org/licenses/by/4.0/' };
+
+/** The uploader may not hold the rights to these: see CREDITS.md. */
+const GAME_RIP = 'This looks like a re-uploaded video-game model, so the uploader may not hold the rights to license it.';
+const REUPLOADER = 'This uploader has re-posted other people’s models, so the licence may not be theirs to give.';
+
 const staggered = (id: string, name: string, note: string, front: AxleFitment, rear: AxleFitment): Fitment => ({
   id,
   name,
@@ -25,8 +35,8 @@ interface SurveyCar {
   make: string;
   model: string;
   years: string;
-  /** The Sketchfab model chosen for this car, with author, licence and link. */
-  credit: string;
+  /** The Sketchfab model chosen for this car: title, author, licence and link. */
+  source: ModelCredit;
   boltCount: number;
   pcdMm: number;
   offsetMm: { front: number; rear: number };
@@ -77,7 +87,7 @@ function car(c: SurveyCar): CarDef {
     model: c.model,
     years: c.years,
     modelUrl: c.prepared ? `/models/${c.id}.glb` : null,
-    credit: c.credit,
+    modelCredit: c.prepared ? c.source : undefined,
     nodes: c.prepared && {
       paint: ['paint'],
       glass: c.prepared.glass === false ? [] : ['glass'],
@@ -123,7 +133,14 @@ export const MORE_CARS: CarDef[] = [
     make: 'Toyota',
     model: 'Supra (A80)',
     years: '1993 to 2002',
-    credit: 'Sketchfab: "Toyota Supra MK IV (1994)" by Martin Trafas, CC Attribution. https://sketchfab.com/3d-models/none-eb9bb1eb41db431cb078088ae1ce45f8',
+    source: {
+      title: 'Toyota Supra MK IV (1994)',
+      author: 'Martin Trafas',
+      authorUrl: 'https://sketchfab.com/TinoD2',
+      url: 'https://sketchfab.com/3d-models/toyota-supra-mk-iv-1994-eb9bb1eb41db431cb078088ae1ce45f8',
+      ...CC_BY,
+      changes: CHANGES,
+    },
     prepared: { ends: [-2.235, 2.296] },
     rhd: true, // the model is a Japanese-market car
     boltCount: 5,
@@ -155,7 +172,15 @@ export const MORE_CARS: CarDef[] = [
     make: 'Nissan',
     model: 'Skyline GT-R (R34)',
     years: '1999 to 2002',
-    credit: 'Sketchfab: "02\' Nissan Skyline R34 GT-R" by DRIVER-FIRE, CC Attribution. https://sketchfab.com/3d-models/none-14bee030e5d847b7ad16be3a28459222',
+    source: {
+      title: '02\' Nissan Skyline R34 GT-R',
+      author: 'DRIVER-FIRE',
+      authorUrl: 'https://sketchfab.com/DRIVER-FIRE',
+      url: 'https://sketchfab.com/3d-models/02-nissan-skyline-r34-gt-r-14bee030e5d847b7ad16be3a28459222',
+      ...CC_BY,
+      changes: CHANGES,
+      unconfirmed: GAME_RIP,
+    },
     prepared: { ends: [-2.295, 2.303] },
     rhd: true, // a Japanese-market car, like the real GT-R
     boltCount: 5,
@@ -187,7 +212,15 @@ export const MORE_CARS: CarDef[] = [
     make: 'Mazda',
     model: 'RX-7 (FD3S)',
     years: '1992 to 2002',
-    credit: 'Sketchfab: "1993_mazda_rx-7" by 007, CC Attribution. https://sketchfab.com/3d-models/none-8b828b5c888c43a1895228d48fe50c97',
+    source: {
+      title: '1993_mazda_rx-7',
+      author: '007',
+      authorUrl: 'https://sketchfab.com/tangwang920',
+      url: 'https://sketchfab.com/3d-models/1993-mazda-rx-7-8b828b5c888c43a1895228d48fe50c97',
+      ...CC_BY,
+      changes: CHANGES,
+      unconfirmed: GAME_RIP,
+    },
     prepared: { ends: [-2.045, 2.242] },
     boltCount: 5,
     pcdMm: 114.3,
@@ -218,7 +251,14 @@ export const MORE_CARS: CarDef[] = [
     make: 'Subaru',
     model: 'Impreza WRX STI (GC8)',
     years: '1992 to 2000',
-    credit: 'Sketchfab: "Subaru Impreza WRX STi Version VI (GC8)" by Mona x Supercars, CC Attribution. https://sketchfab.com/3d-models/none-457f01e7e8d14b088e3f092c1be9e75c',
+    source: {
+      title: 'Subaru Impreza WRX STi Version VI (GC8)',
+      author: 'Mona x Supercars',
+      authorUrl: 'https://sketchfab.com/Car2022',
+      url: 'https://sketchfab.com/3d-models/subaru-impreza-wrx-sti-version-vi-gc8-457f01e7e8d14b088e3f092c1be9e75c',
+      ...CC_BY,
+      changes: CHANGES,
+    },
     prepared: { ends: [-2.122, 2.237] },
     rhd: true, // a Japanese-market car
     boltCount: 5,
@@ -249,7 +289,14 @@ export const MORE_CARS: CarDef[] = [
     make: 'BMW',
     model: 'M3 (E30)',
     years: '1986 to 1991',
-    credit: 'Sketchfab: "[FREE] BMW M3 E30" by Martin Trafas, CC Attribution. https://sketchfab.com/3d-models/none-ac3c7013434e403e8faff87948caf422',
+    source: {
+      title: '[FREE] BMW M3 E30',
+      author: 'Martin Trafas',
+      authorUrl: 'https://sketchfab.com/TinoD2',
+      url: 'https://sketchfab.com/3d-models/free-bmw-m3-e30-ac3c7013434e403e8faff87948caf422',
+      ...CC_BY,
+      changes: CHANGES,
+    },
     prepared: { ends: [-2.051, 2.276] },
     boltCount: 5,
     pcdMm: 120,
@@ -279,7 +326,14 @@ export const MORE_CARS: CarDef[] = [
     make: 'Mercedes-Benz',
     model: '190E (W201)',
     years: '1982 to 1993',
-    credit: 'Sketchfab: "1984 Mercedes 190E" by Dave Love SketchFab, CC Attribution. https://sketchfab.com/3d-models/none-dc0799500bc4478296514b25a6541282',
+    source: {
+      title: '1984 Mercedes 190E',
+      author: 'Dave Love SketchFab',
+      authorUrl: 'https://sketchfab.com/Tyler_Dave',
+      url: 'https://sketchfab.com/3d-models/1984-mercedes-190e-dc0799500bc4478296514b25a6541282',
+      ...CC_BY,
+      changes: CHANGES,
+    },
     prepared: { ends: [-2.1, 2.387], leather: true },
     boltCount: 5,
     pcdMm: 112,
@@ -309,7 +363,15 @@ export const MORE_CARS: CarDef[] = [
     make: 'Porsche',
     model: '911 Carrera (964)',
     years: '1989 to 1994',
-    credit: 'Sketchfab: "1989 Porsche 911 (964) Carrera 4" by 007, CC Attribution. https://sketchfab.com/3d-models/none-22edb81d9ccf46c09a1add7a9ebda2c0',
+    source: {
+      title: '1989 Porsche 911 (964) Carrera 4',
+      author: '007',
+      authorUrl: 'https://sketchfab.com/tangwang920',
+      url: 'https://sketchfab.com/3d-models/1989-porsche-911-964-carrera-4-22edb81d9ccf46c09a1add7a9ebda2c0',
+      ...CC_BY,
+      changes: CHANGES,
+      unconfirmed: REUPLOADER,
+    },
     prepared: { ends: [-2.033, 2.2], leather: true },
     boltCount: 5,
     pcdMm: 130,
@@ -340,7 +402,14 @@ export const MORE_CARS: CarDef[] = [
     make: 'Volkswagen',
     model: 'Golf GTI (Mk1)',
     years: '1976 to 1983',
-    credit: 'Sketchfab: "Volkswagen Golf GTI 1976" by geevisual55, CC Attribution. https://sketchfab.com/3d-models/none-4ab00bf79f2b413c8e89fb7ff5470249',
+    source: {
+      title: 'Volkswagen Golf GTI 1976',
+      author: 'geevisual55',
+      authorUrl: 'https://sketchfab.com/geevisual55',
+      url: 'https://sketchfab.com/3d-models/volkswagen-golf-gti-1976-4ab00bf79f2b413c8e89fb7ff5470249',
+      ...CC_BY,
+      changes: CHANGES,
+    },
     prepared: { ends: [-2.006, 1.854] },
     // The model's front seats run from z −0.36 to about 0.3: sit the eye just
     // ahead of the headrest rather than inside it.
@@ -375,7 +444,14 @@ export const MORE_CARS: CarDef[] = [
     years: '1964 to 1966',
     // The first pick (Kristian LaGrange's convertible) paints everything from
     // one texture, so its paint and wheels can't be separated; this coupe can.
-    credit: 'Sketchfab: "1965 Ford Mustang" by David_Holiday, CC Attribution. Hardtop coupe; no window glass in the model. https://sketchfab.com/3d-models/none-7e93cc22b96a4788897a513374ef4486',
+    source: {
+      title: '1965 Ford Mustang',
+      author: 'David_Holiday',
+      authorUrl: 'https://sketchfab.com/David_Holiday',
+      url: 'https://sketchfab.com/3d-models/1965-ford-mustang-7e93cc22b96a4788897a513374ef4486',
+      ...CC_BY,
+      changes: CHANGES + ' Hardtop coupe; no window glass in the model.',
+    },
     prepared: { ends: [-2.233, 2.387], glass: false },
     boltCount: 5,
     pcdMm: 114.3,
@@ -408,7 +484,14 @@ export const MORE_CARS: CarDef[] = [
     // pick (a 5000 QV by Randomness) has no colours or part names to work with.
     model: 'Countach 25th Anniversary',
     years: '1988 to 1990',
-    credit: 'Sketchfab: "1988 Lamborghini Countach" by Dave Love SketchFab, CC Attribution. https://sketchfab.com/3d-models/none-6ecbd718252143b1a83875357d003592',
+    source: {
+      title: '1988 Lamborghini Countach',
+      author: 'Dave Love SketchFab',
+      authorUrl: 'https://sketchfab.com/Tyler_Dave',
+      url: 'https://sketchfab.com/3d-models/1988-lamborghini-countach-6ecbd718252143b1a83875357d003592',
+      ...CC_BY,
+      changes: CHANGES,
+    },
     prepared: { ends: [-2.135, 1.994], leather: true },
     boltCount: 5,
     pcdMm: 120,

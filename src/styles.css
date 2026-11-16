@@ -118,6 +118,24 @@ p {
   opacity: 0.8;
 }
 
+.masthead-credit {
+  max-width: 46ch;
+  margin-top: 6px;
+  font-size: 11.5px;
+  line-height: 1.4;
+  opacity: 0.72;
+}
+
+/* The rest of the masthead lets drags through to the car; the credit links need clicks. */
+.masthead-credit a {
+  color: inherit;
+  pointer-events: auto;
+}
+
+.credit a {
+  color: inherit;
+}
+
 .hint,
 .loading {
   position: absolute;
@@ -362,13 +380,18 @@ p {
 
 .option {
   display: grid;
-  grid-template-columns: 30px minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   gap: 12px;
   padding: 10px 12px;
   background: none;
   border: 0;
   text-align: left;
+}
+
+/* Rows with a drawing of the part (the wheels) get a column for it. */
+.option:has(> .glyph) {
+  grid-template-columns: 30px minmax(0, 1fr) auto;
 }
 
 .option + .option {
@@ -563,6 +586,11 @@ p {
   .masthead-car {
     margin-top: 4px;
     font-size: 13px;
+  }
+
+  .masthead-credit {
+    max-width: 30ch;
+    font-size: 10.5px;
   }
 
   .hint {

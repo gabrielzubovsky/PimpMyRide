@@ -7,6 +7,7 @@ import { WHEELS, wheelOffersFitment } from '../data/wheels';
 import type { WheelDesign } from '../parts/wheel';
 import { useGarage, useSelection, useUpgrades } from '../state/garage';
 import { formatRide, formatTint, formatTyre, formatUsd, formatWheel } from './format';
+import { ModelCredit } from './ModelCredit';
 import { Stats } from './Stats';
 
 // The build sheet is both the summary of the build and the way to change it.
@@ -86,6 +87,11 @@ export function BuildSheet() {
             <p className="note">
               No 3D model has been sourced for this car yet, so the body is a translucent outline sized
               from the real dimensions. Wheels, tyres, brakes, stance and all the parts still work.
+            </p>
+          )}
+          {car.modelCredit && (
+            <p className="note credit">
+              <ModelCredit credit={car.modelCredit} full />
             </p>
           )}
         </Line>

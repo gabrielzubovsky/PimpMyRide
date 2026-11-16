@@ -7,7 +7,7 @@
 // The token is only ever sent to api.sketchfab.com and never printed.
 //
 // What it does, per car:
-//   1. Finds the model id in the Sketchfab link inside the car's `credit`
+//   1. Finds the model id in the Sketchfab link in the car's `source`
 //      (src/data/more-cars.ts).
 //   2. Checks the model's licence and that it is downloadable.
 //   3. Asks the Download API for a short-lived download link, preferring a
@@ -32,7 +32,8 @@ import { MeshoptDecoder } from 'meshoptimizer';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const OUT_DIR = resolve(root, 'assets-src');
-const DATA_FILES = ['src/data/more-cars.ts', 'src/data/civics.ts', 'src/data/cars.ts'];
+// The 458 and 992 come from GitHub mirrors through their own prep scripts.
+const DATA_FILES = ['src/data/more-cars.ts', 'src/data/civics.ts'];
 const API = 'https://api.sketchfab.com/v3';
 
 // --- Token --------------------------------------------------------------------
@@ -51,15 +52,17 @@ function readToken() {
 
 // --- Which models -------------------------------------------------------------
 
-/** Car id → Sketchfab model id, read from the credit lines in the car data. */
+/** Car id → Sketchfab model id, read from the model links in the car data. */
 function findModels() {
   const found = [];
   for (const file of DATA_FILES) {
     const text = readFileSync(resolve(root, file), 'utf8');
-    const entry = /id: '([^']+)',[\s\S]*?credit:\s*'((?:[^'\\]|\\.)*)'/g;
-    for (const m of text.matchAll(entry)) {
-      const link = m[2].match(/https:\/\/sketchfab\.com\/3d-models\/[\w-]*?([0-9a-f]{32})\b/);
-      if (link) found.push({ carId: m[1], uid: link[1] });
+    // Each car entry runs from one `id: '…'` to the next.
+    const entries = text.split(/\n\s+id: '/).slice(1);
+    for (const entry of entries) {
+      const carId = entry.slice(0, entry.indexOf("'"));
+      const link = entry.match(/https:\/\/sketchfab\.com\/3d-models\/[\w-]*?([0-9a-f]{32})\b/);
+      if (link) found.push({ carId, uid: link[1] });
     }
   }
   return found;

@@ -151,6 +151,26 @@ export interface EngineSpec {
   gearbox?: 'front' | 'rear';
 }
 
+/**
+ * Who made a car's 3D model and under what licence. Creative Commons
+ * Attribution asks for the title, author, source, licence and a note of what
+ * was changed, shown where the work is used, so the app displays this.
+ */
+export interface ModelCredit {
+  title: string;
+  author: string;
+  authorUrl?: string;
+  /** Where the model was published. */
+  url: string;
+  /** Short licence name, e.g. 'CC BY 4.0'. */
+  licence: string;
+  licenceUrl?: string;
+  /** What was changed from the original. */
+  changes: string;
+  /** Set when the licence could not be confirmed: says why. */
+  unconfirmed?: string;
+}
+
 export interface CarDef {
   id: string;
   make: string;
@@ -159,7 +179,8 @@ export interface CarDef {
   /** Path to the car's GLB, or null while no 3D model has been sourced yet.
    *  A car without a model is drawn as a translucent outline instead. */
   modelUrl: string | null;
-  credit: string;
+  /** Credit for the 3D model. Unset for cars drawn as an outline. */
+  modelCredit?: ModelCredit;
   /** Overall size in metres. Drives the outline body and the camera framing. */
   sizeM: {
     length: number;
